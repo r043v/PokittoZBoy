@@ -8,6 +8,7 @@ using namespace Pokitto;
 extern "C" {
 #include "drv.h"
 
+volatile uint32_t *LCD = reinterpret_cast< volatile uint32_t * >(0xA0002188);
 
 void __wrap_free(void *){}
 
@@ -69,20 +70,20 @@ extern uint32_t frameCount;
 uint32_t reported = 0, changes = 0, selectbtn = 0;
 /* returns the next input event in queue */
 int drv_keypoll(void){
-  
+
   if( (changes & (1<<UPBIT)) && !(reported & (1<<UPBIT)) ){
     reported |= 1<<UPBIT;
     if( Buttons::buttons_state & (1<<UPBIT) )
       return DRV_INPUT_KEYDOWN | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_UP;
-    else 
+    else
       return DRV_INPUT_KEYUP | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_UP;
   }
-  
+
   if( (changes & (1<<DOWNBIT)) && !(reported & (1<<DOWNBIT)) ){
     reported |= 1<<DOWNBIT;
     if( Buttons::buttons_state & (1<<DOWNBIT) )
       return DRV_INPUT_KEYDOWN | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_DOWN;
-    else 
+    else
       return DRV_INPUT_KEYUP | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_DOWN;
   }
 
@@ -90,7 +91,7 @@ int drv_keypoll(void){
     reported |= 1<<LEFTBIT;
     if( Buttons::buttons_state & (1<<LEFTBIT) )
       return DRV_INPUT_KEYDOWN | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_LEFT;
-    else 
+    else
       return DRV_INPUT_KEYUP | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_LEFT;
   }
 
@@ -98,7 +99,7 @@ int drv_keypoll(void){
     reported |= 1<<RIGHTBIT;
     if( Buttons::buttons_state & (1<<RIGHTBIT) )
       return DRV_INPUT_KEYDOWN | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_RIGHT;
-    else 
+    else
       return DRV_INPUT_KEYUP | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_RIGHT;
   }
 
@@ -112,7 +113,7 @@ int drv_keypoll(void){
     }
     if( Buttons::buttons_state & (1<<CBIT) )
       return DRV_INPUT_KEYDOWN | DRV_INPUT_KEYBOARD | btn;
-    else 
+    else
       return DRV_INPUT_KEYUP | DRV_INPUT_KEYBOARD | btn;
   }
 
@@ -120,7 +121,7 @@ int drv_keypoll(void){
     reported |= 1<<ABIT;
     if( Buttons::buttons_state & (1<<ABIT) )
       return DRV_INPUT_KEYDOWN | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_LALT;
-    else 
+    else
       return DRV_INPUT_KEYUP | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_LALT;
   }
 
@@ -128,7 +129,7 @@ int drv_keypoll(void){
     reported |= 1<<BBIT;
     if( Buttons::buttons_state & (1<<BBIT) )
       return DRV_INPUT_KEYDOWN | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_LCTRL;
-    else 
+    else
       return DRV_INPUT_KEYUP | DRV_INPUT_KEYBOARD | DRV_INPUT_KEY_LCTRL;
   }
 
@@ -137,13 +138,13 @@ int drv_keypoll(void){
       uint32_t btn = DRV_INPUT_KEY_TAB;
       if( selectbtn )
 	  return DRV_INPUT_KEYDOWN | DRV_INPUT_KEYBOARD | btn;
-      else 
+      else
 	  return DRV_INPUT_KEYUP | DRV_INPUT_KEYBOARD | btn;
   }
-  
+
   reported = 0;
   Buttons::pollButtons();
-  
+
   changes = Buttons::buttons_state ^ (Buttons::buttons_held | Buttons::buttons_released);
 
   if( !*((uint8_t *) 0xA0000001) ){
@@ -154,9 +155,9 @@ int drv_keypoll(void){
     changes |= 1<<7;
     selectbtn = 0;
   }
-  
+
   return DRV_INPUT_NONE;
-  
+
 }
 
 
@@ -181,9 +182,9 @@ const uint16_t borderP[256] = {
   0xadde,
   0xefbe,
   0x0007,
-  0x0000  
+  0x0000
 };
-	      
+
 const uint8_t borderT[
 		       220*16
 ] = {
@@ -227,26 +228,26 @@ void blit( int x, int y, int w, int h, const uint8_t *p ){
   CLR_CS_SET_CD_RD_WR;
   int max = w*h;
   for( int i=max; i; --i ){
-    LPC_GPIO_PORT->MPIN[2] = uint32_t( borderP[*p++] ) << 3; CLR_WR; SET_WR;      
-  }  
+    LPC_GPIO_PORT->MPIN[2] = uint32_t( borderP[*p++] ) << 3; CLR_WR; SET_WR;
+  }
 }
 #endif
 
 
 int main () {
-  
+
   Core::begin();
 
   pokInitSD();
 
   char *args[] = {""};
   *reinterpret_cast<uint32_t *>(0x40048080) |= 3 << 26;
-  
+
   indexRAM();
 
   SET_MASK_P2;
   write_command_16(0x03); write_data_16(0x1038);
-  
+
   #ifdef SCALING
   Pokitto::lcdClear();
   Pokitto::setWindow( 0, 10, 176, 199+10 );
@@ -256,15 +257,14 @@ int main () {
   blit( 0, 176-16, 220, 16, borderB );
   blit( 0, 16, 30, 176-16-16, borderL );
   blit( 160+30, 16, 30, 176-16-16, borderR );
-  
+
   Pokitto::setWindow( 16, 30, 144+15, 159+30 );
-  
+
   #endif
 
   write_command_16(0x22);
   CLR_CS_SET_CD_RD_WR;
 
   zboymain(0, args);
-  
-}
 
+}

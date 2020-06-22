@@ -18,12 +18,14 @@ uint8_t _MemoryBankedRAM[0x2000]; // 0x20A001];    /* Banked RAM [2MiB] */
 uint8_t * const MemoryBankedRAM = _MemoryBankedRAM - 0xA000;
 
 #ifdef EMBEDROM
-const uint8_t MemoryROM[128*1024] = {
+//const uint8_t MemoryROM[128*1024] = {
 #include EMBEDROM
-};
+#define MemoryROM embedrom
+//};
 #else
 const uint8_t MemoryROM[128*1024] = {0xDE, 0xAD, 0xBE, 0xEF, 0x1, 0};
 #endif
+
 
 uint8_t _VideoRAM[0x2000];      /* Video RAM [8KiB] */
 uint8_t _SpriteOAM[0xA0];     /* Sprite OAM memory */
@@ -133,7 +135,7 @@ inline void IOWrite(uint32_t WriteAddr, uint8_t DataHolder, uint8_t *IoRegisters
     //} else if (WriteAddr <= 65535) {
     // MemoryWriteSpecial(WriteAddr, DataHolder);
   }
-  
+
 }
 
 void JoypadWrite(uint8_t JoyNewReg){
@@ -146,7 +148,7 @@ void JoypadWrite(uint8_t JoyNewReg){
     /* P15 selected (bit 5 is low) -> Start/Select/B/A */
     JoyNewReg |= JoyRegB;
   } else if ( JoyNewReg == 3){
-    /* no bits 4 & 5 set, maybe the game wants to get the system type... */    
+    /* no bits 4 & 5 set, maybe the game wants to get the system type... */
       JoyNewReg = 0xF0; /* returns FXh to indicate a classic GameBoy device */
   }
 

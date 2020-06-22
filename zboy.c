@@ -38,7 +38,7 @@
 /* Produce a stand-alone exe file with an embedded ROM file */
 /* #define EMBEDROM "embedrom/dracula.c" */
 /* #define EMBEDROM "embedrom/pacman.c" */
-/* #define EMBEDROM "embedrom/drmario.c" */
+#define EMBEDROM "embedrom/rom.h"
 
 #ifndef DEBUGMODE   /* If not in debugmode, then disable PrintDebug */
   /* #define PrintDebug printf */
@@ -133,7 +133,7 @@ int zboymain(int argc, char **argv) {
   zboy_loadconfig(&zboyparams);
 
   zboyparams.GraphicScaleFactor = 1;    /* use 1x scaling */
-  zboyparams.scalingalgo = REFRESHSCREEN_NOSCALE; /* No scaling at all */ 
+  zboyparams.scalingalgo = REFRESHSCREEN_NOSCALE; /* No scaling at all */
 
   /* check the configuration, and fix it if needed */
   zboy_fixconfig(&zboyparams);
@@ -158,7 +158,7 @@ int zboymain(int argc, char **argv) {
     }
   }
   * /
-  
+
   switch (RomInfos.MbcModel) {  /* Check the MBC chip type, and select the right Read/Write functions * /
     case 0:   /* ROM ONLY * /
       MemoryWriteSpecial = &MBC0_MemoryWrite;
@@ -199,7 +199,7 @@ int zboymain(int argc, char **argv) {
 
   /* starting emulation... */
 
-  
+
   while (QuitEmulator == 0) {
 
     UsedCycles = CpuExec();
@@ -213,19 +213,19 @@ int zboymain(int argc, char **argv) {
       CheckInterrupts( &Register );
       UsedCycles = 0;
     }
-    
+
     int partial = CpuExec();
     UsedCycles += partial;
     TotalCycles += partial;    /* Increment the global cycles counter */
     uTimer( partial );           /* Update uTimer */
     incDivider( partial );       /* Increment the DIV register */
-    
+
     VideoSysUpdate(UsedCycles, &zboyparams);   /* Update Video subsystem */
     CheckJoypad(UsedCycles , &zboyparams);  /* Update the Joypad register */
 
     if ( InterruptsState || HaltState )
       CheckInterrupts( &Register );
-    
+
   }
 
   if ((RomInfos.Battery != 0) && (RomInfos.RamSize > 0)) SaveBattRAM();  /* save the battery-saved RAM, if any */
