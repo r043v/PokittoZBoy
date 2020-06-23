@@ -30,7 +30,7 @@
 
 // uint32_t RomOffset;
 
-void indexRAM(){
+void indexRAMmbc1(){
   int i=0;
   for(; i<0x4000>>5; i++ )
     ramidx[i] = 8;
@@ -50,7 +50,7 @@ void indexRAM(){
     ramidx[i] = 5;
   for(; i<0x10000>>5; i++ )
     ramidx[i] = 6;
-  
+
   RAMette[0] = MemoryROM + (CurRomBank<<14) - 0x4000;
 }
 
@@ -72,10 +72,10 @@ void MBC1Write( uint32_t memaddr, uint8_t DataByte, uint8_t *buffer ){
     else if (CurRomBank == 0x20) CurRomBank = 0x21;  /* Should I do that? Not super sure... */
     else if (CurRomBank == 0x40) CurRomBank = 0x41;  /* Should I do that? Not super sure... */
     else if (CurRomBank == 0x60) CurRomBank = 0x61;  /* Should I do that? Not super sure... */
-    PrintDebug("switched ROM bank to %d\n", CurRomBank);
-    
+    //PrintDebug("switched ROM bank to %d\n", CurRomBank);
+
   } else if ((memaddr >= 0x4000) && (memaddr < 0x6000)) {
-    
+
     if (Mbc1Model == MBC1_16_8) {
 
       // For mode 16/8, 5 bits is not enough to address all
@@ -90,8 +90,8 @@ void MBC1Write( uint32_t memaddr, uint8_t DataByte, uint8_t *buffer ){
       else if (CurRomBank == 0x20) CurRomBank = 0x21;  /* Should I do that? Not super sure... */
       else if (CurRomBank == 0x40) CurRomBank = 0x41;  /* Should I do that? Not super sure... */
       else if (CurRomBank == 0x60) CurRomBank = 0x61;  /* Should I do that? Not super sure... */
-      PrintDebug("switched ROM bank to %d\n", CurRomBank);
-      
+      //PrintDebug("switched ROM bank to %d\n", CurRomBank);
+
     } else {   /* For mode 4/32, you need to select the RAM bank to be used (at A000-C000). to do that, write a */
       CurRamBank = (DataByte & bx00000011);    /* byte into 4000-5FFF. The 2 least significant bits of this */
     }                                            /* byte (xxxxxxBB) are telling what RAM bank to use. */
@@ -99,11 +99,11 @@ void MBC1Write( uint32_t memaddr, uint8_t DataByte, uint8_t *buffer ){
     if ((DataByte & bx00000001) == 0) {
       Mbc1Model = MBC1_16_8;   /* 16/8 model */
       /* SetUserMsg("MBC 16/8"); */
-      PrintDebug("switched MBC1 mode to 16/8\n");
+      //PrintDebug("switched MBC1 mode to 16/8\n");
     } else {
       Mbc1Model = MBC1_4_32;   /* 4/32 model */
       /* SetUserMsg("MBC 4/32"); */
-      PrintDebug("switched MBC1 mode to 4/32\n");
+      //PrintDebug("switched MBC1 mode to 4/32\n");
     }
   }
 
@@ -111,16 +111,14 @@ void MBC1Write( uint32_t memaddr, uint8_t DataByte, uint8_t *buffer ){
 
 }
 
-const WriteHandlerT writeHandlers[] = {
+const WriteHandlerT writeHandlersmbc1[] = {
   MBC1Write,
   RAMWrite,
   RAMWrite,
   RAMWrite,
   RAMWrite,
-  IOWrite,  
+  IOWrite,
   RAMWrite,
   RAMWrite,
   MBC1Write
 };
-
-

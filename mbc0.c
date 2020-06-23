@@ -1,9 +1,9 @@
-void indexRAM(){
+void indexRAMmbc0(){
   int i=0;
   for(; i<0x8000>>5; i++ )
     ramidx[i] = 0;
   for(; i<0xA000>>5; i++ )
-    ramidx[i] = 1;  
+    ramidx[i] = 1;
   for(; i<0xE000>>5; i++ )
     ramidx[i] = 2;
   for(; i<0xFE00>>5; i++ )
@@ -13,10 +13,10 @@ void indexRAM(){
   for(; i<0xFF80>>5; i++ )
     ramidx[i] = 5;
   for(; i<0x10000>>5; i++ )
-    ramidx[i] = 6;  
+    ramidx[i] = 6;
 }
 
-const WriteHandlerT writeHandlers[9] = {
+const WriteHandlerT writeHandlersmbc0[9] = {
   NULLWrite,
   RAMWrite,
   RAMWrite,
@@ -27,4 +27,3 @@ const WriteHandlerT writeHandlers[9] = {
   RAMWrite,
   NULLWrite
 };
-

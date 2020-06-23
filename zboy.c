@@ -107,6 +107,23 @@ char *zboydate(void) {
 #include "reset.c"            /* ResetEmulator() */
 #include "about.c"            /* printhelp() */
 
+#include "mbc0.c"
+#include "mbc1.c"
+
+uint8_t mapper = 0;
+
+void checkMapper( void ){
+  mapper = MemoryROM[0x147];
+  if( mapper == 6 || mapper == 3 ) mapper = 1;
+  if( mapper > 1 ) mapper = 0;
+
+  writeHandlers = mapper ? writeHandlersmbc1 : &writeHandlersmbc0 ;
+}
+
+void indexRAM( void ){
+  mapper ? indexRAMmbc1() : indexRAMmbc0();
+}
+
 
 /* checks whether a joystick is needed in current input configuration
  * returns 0 if not, non-zero otherwise */

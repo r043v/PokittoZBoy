@@ -64,6 +64,7 @@ extern "C" void SetUserMsg(char *msg) {
 }
 
 extern "C" void flipPalette( void );
+extern "C" void checkMapper( void );
 
 uint32_t prevTime;
 extern uint32_t frameCount;
@@ -107,14 +108,16 @@ int drv_keypoll(void){
   if( (changes & (1<<CBIT)) && !(reported & (1<<CBIT)) ){
     reported |= 1<<CBIT;
     uint32_t btn = DRV_INPUT_KEY_RET;
-    if( Buttons::buttons_state & (1<<ABIT) ){
-	btn = DRV_INPUT_KEY_F5;
-    }else if( Buttons::buttons_state & (1<<BBIT) ){
-	btn = DRV_INPUT_KEY_F7;
-}else if( Buttons::buttons_state & (1<<UPBIT) ){
-    // C + UP, switch palette
-      flipPalette();
-    }
+      if( Buttons::buttons_state & (1<<ABIT) ){
+  	     btn = DRV_INPUT_KEY_F5;
+      } else if( Buttons::buttons_state & (1<<BBIT) ){
+  	     btn = DRV_INPUT_KEY_F7;
+      } else if( Buttons::buttons_state & (1<<UPBIT) ){
+        // C + UP, switch palette
+        if( Buttons::buttons_state & (1<<CBIT) ) flipPalette();
+        btn = 0;
+      }
+
     if( Buttons::buttons_state & (1<<CBIT) )
       return DRV_INPUT_KEYDOWN | DRV_INPUT_KEYBOARD | btn;
     else
@@ -245,6 +248,8 @@ int main () {
 
   char *args[] = {""};
   *reinterpret_cast<uint32_t *>(0x40048080) |= 3 << 26;
+
+  checkMapper();
 
   indexRAM();
 

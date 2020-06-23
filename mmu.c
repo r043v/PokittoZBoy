@@ -18,7 +18,6 @@ uint8_t _MemoryBankedRAM[0x2000]; // 0x20A001];    /* Banked RAM [2MiB] */
 uint8_t * const MemoryBankedRAM = _MemoryBankedRAM - 0xA000;
 
 #ifdef EMBEDROM
-//const uint8_t MemoryROM[128*1024] = {
 #include EMBEDROM
 #define MemoryROM embedrom
 //};
@@ -87,7 +86,8 @@ uint8_t * RAMette[9] = {
 
 
 typedef void (*WriteHandlerT)( uint32_t, uint8_t d, uint8_t * );
-extern const WriteHandlerT writeHandlers[];
+//extern const WriteHandlerT writeHandlers[];
+extern WriteHandlerT * writeHandlers;
 
 void NULLWrite( uint32_t addr, uint8_t data, uint8_t *bank ){}
 
@@ -154,14 +154,3 @@ void JoypadWrite(uint8_t JoyNewReg){
 
   IoRegisters[0xFF00] = JoyNewReg;   /* update the joypad register [FF00h] */
 }
-
-
-#ifdef MBC0
-#include "mbc0.c"  /* Support for ROM-ONLY ROMs */
-#elif defined(MBC1)
-#include "mbc1.c"  /* Support for MBC1 memory controllers */
-#endif
-
-//#include "mbc2.c"  /* Support for MBC2 memory controllers */
-//#include "mbc3.c"  /* Support for MBC3 memory controllers (without TIMER support so far) */
-//#include "mbc5.c"  /* Support for MBC5 memory controllers (usually found in GBC games) */
