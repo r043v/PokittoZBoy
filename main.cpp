@@ -63,6 +63,7 @@ extern "C" void SetUserMsg(char *msg) {
   wait_ms(1000);
 }
 
+extern "C" void flipPalette( void );
 
 uint32_t prevTime;
 extern uint32_t frameCount;
@@ -110,6 +111,9 @@ int drv_keypoll(void){
 	btn = DRV_INPUT_KEY_F5;
     }else if( Buttons::buttons_state & (1<<BBIT) ){
 	btn = DRV_INPUT_KEY_F7;
+}else if( Buttons::buttons_state & (1<<UPBIT) ){
+    // C + UP, switch palette
+      flipPalette();
     }
     if( Buttons::buttons_state & (1<<CBIT) )
       return DRV_INPUT_KEYDOWN | DRV_INPUT_KEYBOARD | btn;
