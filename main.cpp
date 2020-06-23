@@ -233,7 +233,6 @@ void blit( int x, int y, int w, int h, const uint8_t *p ){
 }
 #endif
 
-
 int main () {
 
   Core::begin();
@@ -266,5 +265,4 @@ int main () {
   CLR_CS_SET_CD_RD_WR;
 
   zboymain(0, args);
-
 }

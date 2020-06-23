@@ -50,7 +50,14 @@ inline uint8_t GetGbPalette(int PalAddr, uint8_t ColIdx) {
 }
 
 uint8_t framebuffer[160*4];
-const uint32_t palette[16] = {
+
+/*const */uint32_t palette32[16] = {
+  // grayscale
+0x1d3a0e, 0x405c23, 0xaad52b, 0xf9f571,
+0x1d3a0e, 0x405c23, 0xaad52b, 0xf9f571,
+0x1d3a0e, 0x405c23, 0xaad52b, 0xf9f571,
+0x1d3a0e, 0x405c23, 0xaad52b, 0xf9f571
+/*
   0xEFBEADDE,
   0x00000002,
   0x11111111,
@@ -67,6 +74,12 @@ const uint32_t palette[16] = {
   0x000ff002,
   0x11111111,
   0x33333333
+*/
+};
+
+u_int32_t palette[16] = {
+// grayscale
+0xce08,0x1d620,0x53428,0x7bc68,0xce08,0x1d620,0x53428,0x7bc68,0xce08,0x1d620,0x53428,0x7bc68,0xce08,0x1d620,0x53428,0x7bc68
 };
 
 inline void setPixel( uint32_t x, uint32_t y, uint32_t col ){
@@ -78,7 +91,7 @@ inline void setPixel( uint32_t x, uint32_t y, uint32_t col ){
   uint32_t shift = 6 - (column << 1); // 0->6; 1->4; 2->2; 3->0
   framebuffer[i] = (framebuffer[i] & ~(3<<shift)) | (col<<shift);
   */
-  
+
   /*
   uint8_t pixel = framebuffer[i];
   if (column==3) pixel = (pixel&0xFC)|(col); // bits 0-1
@@ -87,8 +100,8 @@ inline void setPixel( uint32_t x, uint32_t y, uint32_t col ){
   else pixel = (pixel&0x3F)|(col<<6); // bits 6-7
   framebuffer[i] = pixel;
   */
-  
-  
+
+
 }
 
 inline uint32_t getPixel( uint32_t x, uint32_t y ){
@@ -101,7 +114,7 @@ inline uint32_t getPixel( uint32_t x, uint32_t y ){
   uint32_t shift = 6 - (column << 1); // 0->6; 1->4; 2->2; 3->0
   return (framebuffer[i]>>shift) & 3;
   */
-  
+
   /*
   uint32_t i = y*(160>>2) + (x>>2);
   uint8_t pixel = framebuffer[i];
@@ -111,14 +124,14 @@ inline uint32_t getPixel( uint32_t x, uint32_t y ){
   else if (column==2) return (pixel & 0x30)>>4; // bits 4-5
   else return pixel>>6;; // bits 6-7
   */
-  
+
 }
 
 inline void DrawBackground( uint32_t CurScanline ) {
   unsigned int TilesDataAddr, BgTilesMapAddr, TileNum, TileToDisplay, TileTempAddress, LastDisplayedTile;
   uint8_t x, y, z, t, u, PixelX, UbyteBuff1, UbyteBuff2;
   static uint8_t TileBuffer[64];
-  
+
   if (((IoRegisters[0xFF40] & 1) == 0) || (HideBackgroundDisplay != 0)) { /* if "BackgroundEnabled" bit is not set, or bg has been forced OFF by user, then do not draw background (fill with black instead) */
     for (x = 0; x < 160; x++) setPixel(x, 0, 3);  /* black */
   } else {  /* If "BackgroundEnabled" bit is set then draw background */
@@ -143,7 +156,7 @@ inline void DrawBackground( uint32_t CurScanline ) {
         TileNum = (IoRegisters[0xFF43] >> 3);  /* 0xFF43 is the SCX register */
 
 	BgTilesMapAddr += (y << 5);
-	
+
 	PixelX = -(IoRegisters[0xFF43] & 7); // ((startX << 3) - IoRegisters[0xFF43]);  /* 0xFF43 is the SCX register */
 	x = PixelX==0;
         for (; x <= 20; x++) {
@@ -161,45 +174,45 @@ inline void DrawBackground( uint32_t CurScanline ) {
             /*FOR t = 0 TO 15 STEP 2 */
               UbyteBuff1 = VideoRAM[TileTempAddress];
               UbyteBuff2 = VideoRAM[TileTempAddress + 1];
-              TileBuffer[t + 7] = 
-		GetGbPalette( 
+              TileBuffer[t + 7] =
+		GetGbPalette(
 			     pal_BGP,
-			     ((UbyteBuff2 & 1) | ((UbyteBuff1 & 1) << 1)) 
+			     ((UbyteBuff2 & 1) | ((UbyteBuff1 & 1) << 1))
 			      );
-	      TileBuffer[t + 6] = 
-		GetGbPalette( 
+	      TileBuffer[t + 6] =
+		GetGbPalette(
 			     pal_BGP,
-			     (((UbyteBuff2>>1)&1) | (((UbyteBuff1 & 2) >> 1) << 1)) 
+			     (((UbyteBuff2>>1)&1) | (((UbyteBuff1 & 2) >> 1) << 1))
 			      );
-	      TileBuffer[t + 5] = 
-		GetGbPalette( 
+	      TileBuffer[t + 5] =
+		GetGbPalette(
 			     pal_BGP,
-			     (((UbyteBuff2>>2)&1) | (((UbyteBuff1 & 4) >> 2) << 1)) 
+			     (((UbyteBuff2>>2)&1) | (((UbyteBuff1 & 4) >> 2) << 1))
 			      );
-	      TileBuffer[t + 4] = 
-		GetGbPalette( 
+	      TileBuffer[t + 4] =
+		GetGbPalette(
 			     pal_BGP,
-			     (((UbyteBuff2>>3)&1) | (((UbyteBuff1 & 8) >> 3) << 1)) 
+			     (((UbyteBuff2>>3)&1) | (((UbyteBuff1 & 8) >> 3) << 1))
 			      );
-	      TileBuffer[t + 3] = 
-		GetGbPalette( 
+	      TileBuffer[t + 3] =
+		GetGbPalette(
 			     pal_BGP,
-			     (((UbyteBuff2>>4)&1) | (((UbyteBuff1 & 16) >> 4) << 1)) 
+			     (((UbyteBuff2>>4)&1) | (((UbyteBuff1 & 16) >> 4) << 1))
 			      );
-	      TileBuffer[t + 2] = 
-		GetGbPalette( 
+	      TileBuffer[t + 2] =
+		GetGbPalette(
 			     pal_BGP,
-			     (((UbyteBuff2>>5)&1) | (((UbyteBuff1 & 32) >> 5) << 1)) 
+			     (((UbyteBuff2>>5)&1) | (((UbyteBuff1 & 32) >> 5) << 1))
 			      );
-	      TileBuffer[t + 1] = 
-		GetGbPalette( 
+	      TileBuffer[t + 1] =
+		GetGbPalette(
 			     pal_BGP,
-			     (((UbyteBuff2>>6)&1) | (((UbyteBuff1 & 64) >> 6) << 1)) 
+			     (((UbyteBuff2>>6)&1) | (((UbyteBuff1 & 64) >> 6) << 1))
 			      );
-	      TileBuffer[t + 0] = 
-		GetGbPalette( 
+	      TileBuffer[t + 0] =
+		GetGbPalette(
 			     pal_BGP,
-			     (((UbyteBuff2>>7)&1) | (((UbyteBuff1 & 128) >> 7) << 1)) 
+			     (((UbyteBuff2>>7)&1) | (((UbyteBuff1 & 128) >> 7) << 1))
 			      );
             /*NEXT t */
           }
@@ -219,7 +232,7 @@ inline void DrawBackground( uint32_t CurScanline ) {
 	    break;
 	  }
 
-	  u = t;	  
+	  u = t;
           // TileNum = ((TileNum+1) & 0x1F) | (TileNum & ~0x1F);
 	  TileNum = (TileNum+1) & 0x1F;
         } /* for(x) */
@@ -246,7 +259,7 @@ inline void DrawWindow( uint32_t CurScanline ) {
 
    The palette for both background and window is located at FF47h (BGP)
   */
-  
+
   static signed int x, y, z, t, UbyteBuff1, UbyteBuff2, pixrow;
   static signed int TilesMapAddress, TilesDataAddress, TileNum, TileToDisplay, PixelX, TileTempAddress;
   static uint8_t TileBufferWin[64];
@@ -316,7 +329,7 @@ inline void DrawWindow( uint32_t CurScanline ) {
 
 
 void DrawSprites( int32_t CurScanline ) {
-  
+
   int PatternNum, SpriteFlags, UbyteBuff1, UbyteBuff2, SpritePalette, x, y, z, t, xx;
   int SpritePosX, SpritePosY, SpriteMaxY;
   int NumberOfSpritesToDisplay;
@@ -325,24 +338,24 @@ void DrawSprites( int32_t CurScanline ) {
 
   if (((IoRegisters[0xFF40] & bx00000010) > 0) && (HideSpritesDisplay == 0)) {
     NumberOfSpritesToDisplay = 0;
-    
+
     if ((IoRegisters[0xFF40] & bx00000100) == 0) {
         SpriteMaxY = 7;
       } else {
         SpriteMaxY = 15;
     }
-    
+
     for (x = 0; x < 40; x++) {
       SpritePosY = SpriteOAM[0xFE00 + (x << 2)] - 16;     // sprite's ypos on screen
       SpritePosX = SpriteOAM[0xFE00 + (x << 2) + 1] - 8;  // sprite's xpos on screen
-      
+
       if ((SpritePosX > -8) && (SpritePosY >= (CurScanline - SpriteMaxY)) && (SpritePosX < 160) && (SpritePosY <= CurScanline)) {
         ListOfSpritesToDisplay[NumberOfSpritesToDisplay] = ((SpritePosX + 8) << 6) | x;
 	//* compute an ID that will allow to sort entries easily
         NumberOfSpritesToDisplay += 1;
       }
     }
-    
+
     // Sort the list of sprites to display
     tableQsort(ListOfSpritesToDisplay, NumberOfSpritesToDisplay - 1);
 
@@ -361,7 +374,7 @@ void DrawSprites( int32_t CurScanline ) {
 	  } else {
 	    SpritePalette = 2; // use OBJ1 palette
           }
-	  
+
           for (z = 0; z <= ((SpriteMaxY << 1) + 1); z += 2) {
             UbyteBuff1 = VideoRAM[0x8000 + (PatternNum << 4) + z];
             UbyteBuff2 = VideoRAM[0x8000 + (PatternNum << 4) + z + 1];
@@ -394,7 +407,7 @@ void DrawSprites( int32_t CurScanline ) {
               SpriteBuff[(z << 3) + 4] = t;
             }
           }
-	  
+
           if ((SpriteFlags & bx01000000) > 0) {
 	    // Bit 6 = Y flip (vertical mirror)
 	    // Bit 5 = X flip (horizontal mirror)
@@ -415,7 +428,7 @@ void DrawSprites( int32_t CurScanline ) {
               }
             }
           }
-	  
+
           // Now apply the sprite onscreen...
           UbyteBuff1 = GetGbPalette(pal_BGP, 0);  // Get background color into UbyteBuff1
           /*for (z = 0; z <= SpriteMaxY; z++) { */
@@ -511,9 +524,9 @@ void SetScanline(uint32_t s){
   write_command_16(0x20); write_data_16(16+s);
   write_command_16(0x21); write_data_16(30);
 #endif
-  
+
   write_command_16(0x22);
-  
+
   // CLR_CS_SET_CD_RD_WR;
   SET[0] = 1 << 2;
   SET[1] = 1 << 24;
@@ -605,25 +618,25 @@ void SetScanline(uint32_t s){
   " str %[WR], [%[LCD], %[pixel]]         \n"		\
   "subs %[x], 4                           \n"		\
   " str %[WR], [%[LCD], 124]              \n"
-      
+
 #endif
-      
+
 
 void FlushScanline(){
   uint32_t *LCD = (uint32_t *) 0xA0002188;
   volatile uint32_t *SET = (uint32_t *) 0xA0002284;
   volatile uint32_t *CLR = (uint32_t *) 0xA0002204;
-  
+
   uint8_t *d = framebuffer;
   uint32_t x = 160, pixel, quad, WR = 1<<12, *pal=palette;
   /* */
 
   asm volatile(
       ".syntax unified                \n"
-      
+
       "nextPixelLoop%=:                       \n"
-      FLUSH_QUAD      
-      FLUSH_QUAD      
+      FLUSH_QUAD
+      FLUSH_QUAD
       "bne nextPixelLoop%=                    \n"
 
       : // outputs
@@ -634,18 +647,18 @@ void FlushScanline(){
 	[palette]"+l"(pal),
 	[WR]"+l"(WR),
 	[LCD]"+l"(LCD)
-	
+
       : // inputs
-	
+
       : // clobbers
 	"cc"
       );
-  
+
   /*/
-  
-  volatile uint32_t c = palette[*d++];  
+
+  volatile uint32_t c = palette[*d++];
   for(x=0;x<160;x+=16){
-      
+
     *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
     *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
 #ifdef SCALING
@@ -678,7 +691,7 @@ void FlushScanline(){
     *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
 #endif
     *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-    
+
   }
   /* */
 }
@@ -693,7 +706,7 @@ static inline void VideoSysUpdate(int cycles, struct zboyparamstype *zboyparams)
   uint32_t checkInput = 0;
 
   VideoClkCounterVBlank += cycles;
-  if (VideoClkCounterVBlank >= 70224) {    
+  if (VideoClkCounterVBlank >= 70224) {
     frameCount++;
     CurLY = 0;
     VideoClkCounterVBlank -= 70224;
@@ -731,13 +744,13 @@ static inline void VideoSysUpdate(int cycles, struct zboyparamstype *zboyparams)
 	  checkInput = 1;
 	}else
 	  frameskip--;
-	
+
         if ((IoRegisters[0xFF40] & bx10000000) == 0) {   /* The LCD is off, make it all black */
           TurnLcdOff();
           /*UserMessage = "LCD IS OFF" */
         }
         // if (zboyparams->NoSpeedLimit == 0) AdjustTiming(zboyparams); /* Slow down CPU emulation before drawing graphic frame */
-	
+
       }
     } else {   /* Outside the VBlank, perform the MODE 0-2-3 loop */
       VideoClkCounterMode += cycles;
@@ -758,20 +771,20 @@ static inline void VideoSysUpdate(int cycles, struct zboyparamstype *zboyparams)
       } else {     /* mode 0 (H-blank) */
           if (GetLcdMode() != 0) {   /* Check if not already in mode 0 */
             if ((IoRegisters[0xFF40] & bx10000000) > 0) {   /* If LCD is ON... */
-              if (LastLYdraw != CurLY) {                    /* And curline hasn't been drawn yet... */		
+              if (LastLYdraw != CurLY) {                    /* And curline hasn't been drawn yet... */
 		if( !frameskip
 		    #ifdef SCALING
 		    && CurLY>2 && CurLY < 155
 		    #endif
 		    ){
-		  
+
 		  DrawBackground(CurLY);                      /* Generate current scanline */
 		  DrawWindow(CurLY);
 		  DrawSprites(CurLY);
 
 		  if( LastLYdraw != CurLY -1 )
 		    SetScanline(CurLY);
-		
+
 		  FlushScanline();
 		  #ifdef SCALING
 		  if( !(CurLY&3) )
@@ -780,7 +793,7 @@ static inline void VideoSysUpdate(int cycles, struct zboyparamstype *zboyparams)
 
 		}
                 LastLYdraw = CurLY;
-		
+
               }
             }
             /* Trigger the hblank interrupt if enabled via bit 3 of the stat register (FF41) (via LCDC int?) */

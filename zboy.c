@@ -43,11 +43,11 @@
 #ifndef DEBUGMODE   /* If not in debugmode, then disable PrintDebug */
   /* #define PrintDebug printf */
   /* #define PrintDebug(...) */
-  void PrintDebug(char *s, ...) {
-    s = s;  /* just to make gcc warnings shut up */
-  }
+//  void PrintDebug(char *s, ...) {
+//    s = s;  /* just to make gcc warnings shut up */
+//  }
   #else
-  #define PrintDebug printf
+//  #define PrintDebug printf
 #endif
 
 #include "zboystructs.h"
@@ -145,6 +145,8 @@ int zboymain(int argc, char **argv) {
   if (drv_init(GraphicWidth, GraphicHeight, isjoystickneeded(&zboyparams) != 0 ? zboyparams.joyid : -1) != 0) {
     return(0);
   }
+
+//  patchPalette();
 
   // InitScreenOldBuffer();   /* Init the screen buff used for LCD change detection (will force the complete draw of the 1st frame) */
 
