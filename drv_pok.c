@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 #include "drv.h"   /* include self for control */
-#include "icon.h"  /* icon32x32_bmp[] for titlebar icon */
+//#include "icon.h"  /* icon32x32_bmp[] for titlebar icon */
 
 int drv_init(int screenwidth, int screenheight, int joyid);
 
@@ -30,4 +30,3 @@ int drv_close(void){
  * available in *dir */
 void drv_getsavedir(char *dir, int maxlen){
 }
-

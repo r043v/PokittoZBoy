@@ -5,6 +5,8 @@ using namespace Pokitto;
 
 #include "save.hpp"
 
+extern u_int32_t scaling;
+
 extern "C" {
 #include "drv.h"
 
@@ -55,15 +57,19 @@ extern "C" void SetUserMsg(char *msg) {
     Pokitto::Display::enableDirectPrinting(true);
     Pokitto::Display::setCursor(1, 1);
     Pokitto::Display::print(msg);
-  #ifdef SCALING
-  Pokitto::setWindow( 0, 10, 176, 199+10 );
-  #else
-  Pokitto::setWindow( 16, 30, 144+15, 159+30 );
-  #endif
+  //#ifdef SCALING
+  if( scaling ){
+    Pokitto::setWindow( 0, 10, 176, 199+10 );
+  } else {
+  //#else
+    Pokitto::setWindow( 16, 30, 144+15, 159+30 );
+  }
+  //#endif
   wait_ms(1000);
 }
 
 extern "C" void flipPalette( void );
+extern "C" void flipScaling( void );
 extern "C" void checkMapper( void );
 
 uint32_t prevTime;
@@ -114,7 +120,12 @@ int drv_keypoll(void){
   	     btn = DRV_INPUT_KEY_F7;
       } else if( Buttons::buttons_state & (1<<UPBIT) ){
         // C + UP, switch palette
-        if( Buttons::buttons_state & (1<<CBIT) ) flipPalette();
+        if( Buttons::buttons_state & (1<<CBIT) )
+          flipPalette();
+        btn = 0;
+      } else if( Buttons::buttons_state & (1<<DOWNBIT) ){
+        if( Buttons::buttons_state & (1<<CBIT) )
+          flipScaling();
         btn = 0;
       }
 
@@ -183,8 +194,8 @@ unsigned long drv_getticks(void){
 const uint16_t border[] = {0};
 
 extern "C" void indexRAM();
-
-#ifndef SCALING
+/*
+//#ifndef SCALING
 const uint16_t borderP[256] = {
   0xadde,
   0xefbe,
@@ -238,7 +249,29 @@ void blit( int x, int y, int w, int h, const uint8_t *p ){
     LPC_GPIO_PORT->MPIN[2] = uint32_t( borderP[*p++] ) << 3; CLR_WR; SET_WR;
   }
 }
-#endif
+//#endif
+*/
+extern "C" void screenInit( void ){
+  SET_MASK_P2;
+  write_command_16(0x03); write_data_16(0x1038);
+
+  if( scaling ){
+    Pokitto::lcdClear();
+    Pokitto::setWindow( 0, 10, 176, 199+10 );
+    return;
+  }
+/*
+  blit( 0, 0, 220, 16, borderT );
+  blit( 0, 176-16, 220, 16, borderB );
+  blit( 0, 16, 30, 176-16-16, borderL );
+  blit( 160+30, 16, 30, 176-16-16, borderR );
+*/
+  Pokitto::lcdClear();
+  Pokitto::setWindow( 16, 30, 144+15, 159+30 );
+
+  write_command_16(0x22);
+  CLR_CS_SET_CD_RD_WR;
+}
 
 int main () {
 
@@ -253,25 +286,7 @@ int main () {
 
   indexRAM();
 
-  SET_MASK_P2;
-  write_command_16(0x03); write_data_16(0x1038);
-
-  #ifdef SCALING
-  Pokitto::lcdClear();
-  Pokitto::setWindow( 0, 10, 176, 199+10 );
-  #else
-
-  blit( 0, 0, 220, 16, borderT );
-  blit( 0, 176-16, 220, 16, borderB );
-  blit( 0, 16, 30, 176-16-16, borderL );
-  blit( 160+30, 16, 30, 176-16-16, borderR );
-
-  Pokitto::setWindow( 16, 30, 144+15, 159+30 );
-
-  #endif
-
-  write_command_16(0x22);
-  CLR_CS_SET_CD_RD_WR;
+  screenInit();
 
   zboymain(0, args);
 }

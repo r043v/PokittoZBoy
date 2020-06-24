@@ -148,15 +148,16 @@ OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/
 OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/sleep.o
 OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/spi_api.o
 OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/us_ticker.o
+
 OBJECTS += BUILD/main.o
 OBJECTS += BUILD/zboy.o
 OBJECTS += BUILD/drv_pok.o
-OBJECTS += BUILD/loadpal.o
-OBJECTS += BUILD/loadrom.o
-OBJECTS += BUILD/net_none.o
+#OBJECTS += BUILD/loadpal.o
+#OBJECTS += BUILD/loadrom.o
+#OBJECTS += BUILD/net_none.o
 OBJECTS += BUILD/config.o
-OBJECTS += BUILD/crc32.o
-OBJECTS += BUILD/wordwrap.o
+#OBJECTS += BUILD/crc32.o
+#OBJECTS += BUILD/wordwrap.o
 
 
 INCLUDE_PATHS += -I./.
@@ -278,6 +279,9 @@ CXX_FLAGS += -DTARGET_LIKE_CORTEX_M0
 #overclock
 C_FLAGS += -D_OSCT=2
 CXX_FLAGS += -D_OSCT=2
+
+CFLAGS += -Wfatal-errors
+CXXFLAGS += -Wfatal-errors
 
 ASM_FLAGS += -x
 ASM_FLAGS += assembler-with-cpp

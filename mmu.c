@@ -91,18 +91,26 @@ extern WriteHandlerT * writeHandlers;
 
 void NULLWrite( uint32_t addr, uint8_t data, uint8_t *bank ){}
 
-inline uint8_t *getMemoryBlock( int ReadAddr ){
-  return RAMette[ ramidx[ReadAddr>>5] ];
-}
+#define getMemoryBlock(a) (RAMette[ ramidx[ (a) >> 5 ] ])
 
-inline uint8_t MemoryRead(int ReadAddr) {
+/*inline uint8_t *getMemoryBlock( int ReadAddr ){
+  return RAMette[ ramidx[ReadAddr>>5] ];
+}*/
+
+#define MemoryRead(a) (RAMette[ ramidx[ (a) >> 5 ] ][ (a) ])
+
+/*inline uint8_t MemoryRead(int ReadAddr) {
   return RAMette[ ramidx[ReadAddr>>5] ][ ReadAddr ];
-}
+}*/
+
+//#define MemoryWrite(a,d) {int i=ramidx[ a >> 5];writeHandlers[ i ]( a, d, RAMette[i] );}
 
 inline void MemoryWrite(uint32_t WriteAddr, uint8_t DataHolder) {
   int id = ramidx[WriteAddr>>5];
   writeHandlers[ id ]( WriteAddr, DataHolder, RAMette[id] );
 }
+
+//#define RAMWrite(a,d,b) b[a]=d;
 
 void RAMWrite( uint32_t WriteAddr, uint8_t DataHolder, uint8_t *buffer ){
     buffer[ WriteAddr ] = DataHolder;
@@ -112,7 +120,7 @@ void RAMWrite( uint32_t WriteAddr, uint8_t DataHolder, uint8_t *buffer ){
 uint8_t JoyRegA = 0, JoyRegB = 0, JoyOldReg;
 // uint8_t *PCBuffer;
 
-uint8_t MemoryRead( int );
+//uint8_t MemoryRead( int );
 
 inline void IOWrite(uint32_t WriteAddr, uint8_t DataHolder, uint8_t *IoRegisters){
 
@@ -123,8 +131,11 @@ inline void IOWrite(uint32_t WriteAddr, uint8_t DataHolder, uint8_t *IoRegisters
     /* SetUserMsg("LY RESET"); */
   } else if (WriteAddr == 0xFF46) {   /* Starts LCD OAM DMA transfer */
       int x;
-      for( x = 0; x < 160; x++) { /* Let's copy XX00-XX9F to FE00-FE9F */
-	SpriteOAM[0xFE00 | x] = MemoryRead((DataHolder << 8) | x);
+      register int v = DataHolder << 8;
+      //(RAMette[ ramidx[ (a) >> 5 ] ][ (a) ])
+      SpriteOAM[ 0xFE00 ] = MemoryRead( v );
+      for( x = 1; x < 160; x++) { /* Let's copy XX00-XX9F to FE00-FE9F */
+	SpriteOAM[0xFE00 | x] = MemoryRead( v | x);
       }
   } else if (WriteAddr == 0xFF04) {
     IoRegisters[0xFF04] = 0;      /* Divide register: Writing any value sets it to 0 */

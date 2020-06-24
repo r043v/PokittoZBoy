@@ -35,7 +35,7 @@ uint8_t CurLY, LastLYdraw;   /* used by VideoSysUpdate */
 //                                 0x555555,
 //                                 0x000000};
 
-#include "video_out.c"        /* Video output (& scaling) routines */
+//#include "video_out.c"        /* Video output (& scaling) routines */
 /* void (*RefreshScreen)(); */ /* this is a pointer to a function, it needs to be set to the appropriate function later. */
 
 
@@ -43,7 +43,7 @@ uint8_t CurLY, LastLYdraw;   /* used by VideoSysUpdate */
 #define pal_OBP0 0xFF48
 #define pal_OBP1 0xFF49
 
-inline static uint8_t GetGbPalette(int PalAddr, uint8_t ColIdx) {
+__attribute__((always_inline)) uint8_t GetGbPalette(int PalAddr, uint8_t ColIdx) {
   /*  Returns the RGB value of a color index from one of the palettes */
   /*   ColIdx: 0..3 */
   /*   PalType: 0=BGP  1=OBP0  2=OBP1 */
@@ -59,6 +59,15 @@ uint8_t framebuffer[160*4];
 const u_int32_t palettes[] =
 {0x73ae0,0x4e7a0,0x25460,0x8518,0x3fff0,0x330b0,0x15650,0x4718,0x3bfa8,0x26b78,0x15438,0x7fff8,0x7db68,0x59558,0x14510,0x7fff8,0xce08,0x1d620,0x53428,0x7bc68,0xce08,0x1d620,0x53428,0x7bc68,0xce08,0x1d620,0x53428,0x7bc68,0xce08,0x1d620,0x53428,0x7bc68,0x0,0x3cc00,0x7ea60,0x7fff8,0x0,0x3cc00,0x7b0a0,0x7fff8,0x0,0x3cc00,0x7ea60,0x7fff8,0x0,0x3cc00,0x7ea60,0x7fff8,0x0,0x44e38,0x7e080,0x7fff8,0x0,0x6c000,0x7e080,0x7fff8,0x0,0x2000,0x3bf28,0x7fff8,0x0,0xf0,0x32890,0x7fff8,0x2cc08,0x41a20,0x66680,0x7f9b8,0x0,0x35428,0x52048,0x7fff8,0x0,0x3cc00,0x7ea60,0x7fff8,0x0,0x3cc00,0x7ea60,0x7fff8,0x0,0x52080,0x29560,0x7fd90,0x0,0x6c000,0x7e080,0x7ff00,0x0,0x2000,0x6e068,0x7fff8,0x0,0x14a40,0x2e2a8,0x7fff8,0x7fff8,0x7e930,0x12500,0x21830,0x0,0x6c000,0x7e080,0x7fff8,0x7ff00,0x3cc10,0x3bf28,0x7fff8,0x0,0x75b08,0x7fff8,0x7fff8,0x625c8,0x21440,0x4c980,0x4310,0x625c8,0x18c88,0x4c980,0x4310,0x0,0x10820,0xa668,0x7ebd0,0x0,0x1c6b0,0x74000,0x7fff8,0x0,0x2800,0x7c000,0x7f610,0x7df00,0x47680,0x10920,0x0,0x54ff8,0x0,0x7ff78,0x7df00,0x2bf08,0x75b08,0x7fff8,0x7fff8,0x1408,0x7cc00,0x7ff70,0x1edf0,0x0,0x7ff00,0x5d800,0x7fff8,0x5c000,0x7c000,0x7b7d0,0x7fff8,0x0,0x75b08,0x7fff8,0x7fff8,0x20e18,0x31628,0x56760,0x736a0,0x0,0x6c000,0x7e080,0x7fff8,0x0,0x2000,0x56760,0x7fff8,0x0,0x78700,0x7fc00,0x7fff8,0x10038,0x49c00,0x7e540,0x7f8b0,0x0,0x1cd0,0xe6f8,0x7fdc0,0x10038,0x2c0b0,0x514f8,0x7fff8,0x1480,0x11fb8,0x370f8,0x7fff8,0x0,0x5a248,0x73270,0x5bae8,0x0,0x6c000,0x7e080,0x7fff8,0x70718,0x110b8,0x77690,0x7fff8,0x1da00,0x63918,0x7bf98,0x7fff8};
 
+u_int32_t scaling = 1;
+
+void screenInit( void );
+
+void flipScaling( void ){
+  scaling ^= 1;
+  screenInit();
+}
+
 u_int32_t * palette = palettes;
 u_int8_t currentPalette = 0;
 
@@ -68,46 +77,7 @@ void flipPalette( void ){
 }
 
 #define setPixel(x,y,c) framebuffer[x]=c
-
-//inline static void setPixel( uint32_t x, uint32_t y, uint32_t col ){
-//  framebuffer[x] = col;
-  /*
-  uint32_t i = x>>2; // y*(160>>2) + (x>>2);
-  uint8_t column = x&0x03;
-  uint32_t shift = 6 - (column << 1); // 0->6; 1->4; 2->2; 3->0
-  framebuffer[i] = (framebuffer[i] & ~(3<<shift)) | (col<<shift);
-  */
-
-  /*
-  uint8_t pixel = framebuffer[i];
-  if (column==3) pixel = (pixel&0xFC)|(col); // bits 0-1
-  else if (column==2) pixel = (pixel&0xF3)|(col<<2); // bits 2-3
-  else if (column==1) pixel = (pixel&0xCF)|(col<<4); // bits 4-5
-  else pixel = (pixel&0x3F)|(col<<6); // bits 6-7
-  framebuffer[i] = pixel;
-  */
-//}
-
 #define getPixel(x,y) framebuffer[x]
-//inline uint32_t getPixel( uint32_t x, uint32_t y ){
-//  return framebuffer[x];
-  /*
-  uint32_t i = x>>2; // y*(160>>2) + (x>>2);
-  uint8_t column = x & 0x03;
-  uint32_t shift = 6 - (column << 1); // 0->6; 1->4; 2->2; 3->0
-  return (framebuffer[i]>>shift) & 3;
-  */
-
-  /*
-  uint32_t i = y*(160>>2) + (x>>2);
-  uint8_t pixel = framebuffer[i];
-  uint8_t column = x&0x03;
-  if (column==0) return pixel & 0x03; // bits 0-1
-  else if (column==1) return (pixel & 0x0C)>>2; // bits 2-3
-  else if (column==2) return (pixel & 0x30)>>4; // bits 4-5
-  else return pixel>>6;; // bits 6-7
-  */
-//}
 
 inline void DrawBackground( uint32_t CurScanline ) {
   unsigned int TilesDataAddr, BgTilesMapAddr, TileNum, TileToDisplay, TileTempAddress, LastDisplayedTile;
@@ -115,19 +85,37 @@ inline void DrawBackground( uint32_t CurScanline ) {
   static uint8_t TileBuffer[64];
 
   if (((IoRegisters[0xFF40] & 1) == 0) || (HideBackgroundDisplay != 0)) { /* if "BackgroundEnabled" bit is not set, or bg has been forced OFF by user, then do not draw background (fill with black instead) */
-    for (x = 0; x < 160; x++) setPixel(x, 0, 3);  /* black */
-  } else {  /* If "BackgroundEnabled" bit is set then draw background */
+    //for (x = 0; x < 160; x++) setPixel(x, 0, 3);  /* black */
+    u_int32_t *p = (u_int32_t*)framebuffer, *end = &p[40];
+    do {
+      *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0;
+      *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0;
+    } while( p != end );
+
+    //memset( framebuffer,0,160 ); // white
+    //return;
+  }
+  else
+  {  /* If "BackgroundEnabled" bit is set then draw background */
     /* Get starting address of tiles data */
-    if ((IoRegisters[0xFF40] & 16) == 0) {
-      TilesDataAddr = 0x8800;
-    } else {
-      TilesDataAddr = 0x8000;
+    { register u_int32_t tmp = IoRegisters[0xFF40];
+      TilesDataAddr  = tmp & 16 ? 0x8000 : 0x8800;
+      BgTilesMapAddr = tmp &  8 ? 0x9C00 : 0x9800;
+/*      if (( tmp & 16 ) == 0) {
+        TilesDataAddr = 0x8800;
+      } else {
+        TilesDataAddr = 0x8000;
+      }
+      if ((IoRegisters[0xFF40] & 8) == 0) {
+        BgTilesMapAddr = 0x9800;
+      } else {
+        BgTilesMapAddr = 0x9C00;
+      }
+*/
     }
-    if ((IoRegisters[0xFF40] & 8) == 0) {  /* Get address of BGP tiles *map* */
-      BgTilesMapAddr = 0x9800;
-    } else {
-      BgTilesMapAddr = 0x9C00;
-    }
+//TilesDataAddr = TilesDataAddresses[(IoRegisters[0xFF40] >> 4) & 1];
+//BgTilesMapAddr = BgTileMapAddresses[(IoRegisters[0xFF40] >> 3) & 1];
+
     y = CurScanline + IoRegisters[0xFF42]; // SCY?
     z = (y & 7);   /* Same than z = y MOD 8 (but MUCH faster)    --> this is the tile's row that has to be computed */
     u = (z << 3);  /* << 3 = *8 */
@@ -200,6 +188,9 @@ inline void DrawBackground( uint32_t CurScanline ) {
           }
 
 	  t = u;
+
+//  u_int8_t *p = &framebuffer[PixelX], *tile = &TileBuffer[u];
+
 	  switch( 160 - PixelX ){
 	  default:
 	  case 8:  setPixel( PixelX++, 0, TileBuffer[u++] );
@@ -211,8 +202,10 @@ inline void DrawBackground( uint32_t CurScanline ) {
 	  case 2:  setPixel( PixelX++, 0, TileBuffer[u++] );
 	  case 1:  setPixel( PixelX++, 0, TileBuffer[u++] );
 	  case 0:
-	    break;
-	  }
+	  break;
+	  };
+
+/*  u_int8_t *p = &framebuffer[PixelX], *tile = &TileBuffer[u]; */
 
 	  u = t;
           // TileNum = ((TileNum+1) & 0x1F) | (TileNum & ~0x1F);
@@ -499,13 +492,17 @@ void write_command_16(uint16_t data);
 void SetScanline(uint32_t s){
   volatile uint32_t *SET = (uint32_t *) 0xA0002200;
 
-#ifdef SCALING
-  write_command_16(0x20); write_data_16(s+((s+3)>>2)-4);
-  write_command_16(0x21); write_data_16(10);
-#else
-  write_command_16(0x20); write_data_16(16+s);
-  write_command_16(0x21); write_data_16(30);
-#endif
+  write_command_16(0x20);
+
+  if( scaling ){
+    write_data_16(s+((s+3)>>2)-4);
+    write_command_16(0x21);
+    write_data_16(10);
+  } else {
+    write_data_16(16+s);
+    write_command_16(0x21);
+    write_data_16(30);
+  }
 
   write_command_16(0x22);
 
@@ -515,10 +512,10 @@ void SetScanline(uint32_t s){
   SET[1] = 1 << 12;
 }
 
-#ifdef SCALING
+//#ifdef SCALING
 
 
-#define FLUSH_QUAD					\
+#define FLUSH_QUAD_SCALE					\
   " ldm %[pixelptr]!, {%[qd]}             \n"		\
   " uxtb %[pixel], %[qd]                  \n"		\
   " lsls %[pixel], %[pixel], 2            \n"		\
@@ -561,7 +558,7 @@ void SetScanline(uint32_t s){
   "subs %[x], 4                           \n"	 \
   " str %[WR], [%[LCD], 124]              \n"
 
-#else
+//#else
 
 #define FLUSH_QUAD					\
   " ldm %[pixelptr]!, {%[qd]}             \n"		\
@@ -601,8 +598,41 @@ void SetScanline(uint32_t s){
   "subs %[x], 4                           \n"		\
   " str %[WR], [%[LCD], 124]              \n"
 
-#endif
+//#endif
 
+
+void FlushScanline_scale(){
+  uint32_t *LCD = (uint32_t *) 0xA0002188;
+  volatile uint32_t *SET = (uint32_t *) 0xA0002284;
+  volatile uint32_t *CLR = (uint32_t *) 0xA0002204;
+
+  uint8_t *d = framebuffer;
+  uint32_t x = 160, pixel, quad, WR = 1<<12, *pal=palette;
+  /* */
+
+  asm volatile(
+      ".syntax unified                \n"
+
+      "nextPixelLoop%=:                       \n"
+      FLUSH_QUAD_SCALE
+      FLUSH_QUAD_SCALE
+      "bne nextPixelLoop%=                    \n"
+
+      : // outputs
+	[pixelptr]"+l"(d),
+	[x]"+l"(x),
+	[pixel]"=l"(pixel),
+	[qd]"=l"(quad),
+	[palette]"+l"(pal),
+	[WR]"+l"(WR),
+	[LCD]"+l"(LCD)
+
+      : // inputs
+
+      : // clobbers
+	"cc"
+      );
+}
 
 void FlushScanline(){
   uint32_t *LCD = (uint32_t *) 0xA0002188;
@@ -635,55 +665,14 @@ void FlushScanline(){
       : // clobbers
 	"cc"
       );
-
-  /*/
-
-  volatile uint32_t c = palette[*d++];
-  for(x=0;x<160;x+=16){
-
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-#ifdef SCALING
-    *LCD = c; *SET=1<<12; c=*LCD; *CLR=1<<12; *SET=1<<12; c = palette[*d++]; *CLR=1<<12;
-#else
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-#endif
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-#ifdef SCALING
-    *LCD = c; *SET=1<<12; c=*LCD; *CLR=1<<12; *SET=1<<12; c = palette[*d++]; *CLR=1<<12;
-#else
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-#endif
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-#ifdef SCALING
-    *LCD = c; *SET=1<<12; c=*LCD; *CLR=1<<12; *SET=1<<12; c = palette[*d++]; *CLR=1<<12;
-#else
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-#endif
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-#ifdef SCALING
-    *LCD = c; *SET=1<<12; c=*LCD; *CLR=1<<12; *SET=1<<12; c = palette[*d++]; *CLR=1<<12;
-#else
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-#endif
-    *LCD = c; *SET=1<<12; c=palette[*d++]; *CLR=1<<12;
-
-  }
-  /* */
 }
 
 uint32_t frameCount;
 
 static inline void VideoSysUpdate(int cycles, struct zboyparamstype *zboyparams) {
   // static int x1, x2, y1, y2, x, y;
-  static unsigned int LastFullframeRenderingTime = 0;
-  static uint32_t OneSecondPollingTimer = 0;
+  //static unsigned int LastFullframeRenderingTime = 0;
+  //static uint32_t OneSecondPollingTimer = 0;
   static uint32_t frameskip = 0;
   uint32_t checkInput = 0;
 
@@ -754,26 +743,24 @@ static inline void VideoSysUpdate(int cycles, struct zboyparamstype *zboyparams)
           if (GetLcdMode() != 0) {   /* Check if not already in mode 0 */
             if ((IoRegisters[0xFF40] & bx10000000) > 0) {   /* If LCD is ON... */
               if (LastLYdraw != CurLY) {                    /* And curline hasn't been drawn yet... */
-		if( !frameskip
-		    #ifdef SCALING
-		    && CurLY>2 && CurLY < 155
-		    #endif
-		    ){
 
-		  DrawBackground(CurLY);                      /* Generate current scanline */
-		  DrawWindow(CurLY);
-		  DrawSprites(CurLY);
+    if( !frameskip ){
+      DrawBackground(CurLY);                      /* Generate current scanline */
+      DrawWindow(CurLY);
+      DrawSprites(CurLY);
 
-		  if( LastLYdraw != CurLY -1 )
-		    SetScanline(CurLY);
+      if( LastLYdraw != CurLY -1 )
+        SetScanline(CurLY);
 
-		  FlushScanline();
-		  #ifdef SCALING
-		  if( !(CurLY&3) )
-		    FlushScanline();
-		  #endif
+      if( !scaling ){
+  		  FlushScanline();
+      } else if( CurLY>2 && CurLY < 155 ){
+        FlushScanline_scale();
+        if( !(CurLY&3) )
+  		    FlushScanline_scale();
+      }
+    }
 
-		}
                 LastLYdraw = CurLY;
 
               }

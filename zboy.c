@@ -38,7 +38,7 @@
 /* Produce a stand-alone exe file with an embedded ROM file */
 /* #define EMBEDROM "embedrom/dracula.c" */
 /* #define EMBEDROM "embedrom/pacman.c" */
-#define EMBEDROM "embedrom/rom.h"
+#define EMBEDROM "embedrom/2048.h"
 
 #ifndef DEBUGMODE   /* If not in debugmode, then disable PrintDebug */
   /* #define PrintDebug printf */
@@ -55,11 +55,11 @@
 struct RomInformations RomInfos;
 
 // char CartTypes[256][256];
-signed int AskForScreenshot = 0;
-unsigned int LastScreenshotTime = 0;
-uint8_t NetPlay = 0;
-char *NetPlayPeer;
-char *NetPlayBindaddr = NULL;
+//signed int AskForScreenshot = 0;
+//unsigned int LastScreenshotTime = 0;
+//uint8_t NetPlay = 0;
+//char *NetPlayPeer;
+//char *NetPlayBindaddr = NULL;
 int QuitEmulator = 0;
 
 unsigned int GraphicWidth, GraphicHeight;
@@ -75,20 +75,20 @@ char *zboydate(void) {
   return(pDate);
 }
 
-#include "about.h"
+//#include "about.h"
 #include "declares.h"         /* Some SUB/FUNCTION declarations */
 #include "binary.h"           /* Provides basic support to binary notation (eg. bx01100111) */
 #include "adjtiming.c"        /* AdjustTiming() */
 #include "config.h"           /* zBoy_loadconfig() & zBoy_saveconfig() */
 #include "numconv.c"          /* UbyteToByte() and DwordVal() */
-#include "presskey.c"         /* PressAnyKey() */
-#include "getsnapshotfilename.c"
+//#include "presskey.c"         /* PressAnyKey() */
+//#include "getsnapshotfilename.c"
 #include "mmu.c"              /* Include Memory Management Unit emulation core */
-#include "hiscores.c"         /* Provides SaveHiScoresMem() and LoadHiScoresMem() */
+//#include "hiscores.c"         /* Provides SaveHiScoresMem() and LoadHiScoresMem() */
 #include "cpu-ints.c"         /* Interrupts routines */
 #include "video.c"            /* Video emulation core */
-#include "loadpal.h"          /* LoadPalette() */
-#include "colorize.c"         /* colorize() */
+//#include "loadpal.h"          /* LoadPalette() */
+//#include "colorize.c"         /* colorize() */
 #include "joypad.c"           /* Joypad interface emulation */
 #include "cpu-timer.c"        /* Include timer emulation */
 #include "cpu-divider.c"      /* Include divider emulation */
@@ -96,16 +96,16 @@ char *zboydate(void) {
   #include "debug.c"          /* Includes some debugging routines */
 #endif
 #include "cpu-z80.c"          /* Z80 CPU emulation core */
-#include "battery.c"          /* Provides LoadBattRAM() and SaveBattRAM() */
-#include "font.c"             /* Includes font data used by zBoy to display onscreen messages */
-#include "wordwrap.h"         /* WordWrap(), required by PrintMsg() */
-#include "printmsg.c"         /* PrintMsg(text AS STRING) */
-#include "loadrom.h"          /* LoadROM(RomFile AS STRING) */
-#include "serial.c"           /* Serial interface emulation */
-#include "savepcx.c"          /* Screenshot routine SavePcxFile() */
+//#include "battery.c"          /* Provides LoadBattRAM() and SaveBattRAM() */
+//#include "font.c"             /* Includes font data used by zBoy to display onscreen messages */
+//#include "wordwrap.h"         /* WordWrap(), required by PrintMsg() */
+//#include "printmsg.c"         /* PrintMsg(text AS STRING) */
+//#include "loadrom.h"          /* LoadROM(RomFile AS STRING) */
+//#include "serial.c"           /* Serial interface emulation */
+//#include "savepcx.c"          /* Screenshot routine SavePcxFile() */
 #include "save.c"             /* SaveGame() and LoadGame() */
 #include "reset.c"            /* ResetEmulator() */
-#include "about.c"            /* printhelp() */
+//#include "about.c"            /* printhelp() */
 
 #include "mbc0.c"
 #include "mbc1.c"
@@ -117,13 +117,12 @@ void checkMapper( void ){
   if( mapper == 6 || mapper == 3 ) mapper = 1;
   if( mapper > 1 ) mapper = 0;
 
-  writeHandlers = mapper ? writeHandlersmbc1 : &writeHandlersmbc0 ;
+  writeHandlers = mapper ? writeHandlersmbc1 : writeHandlersmbc0 ;
 }
 
 void indexRAM( void ){
   mapper ? indexRAMmbc1() : indexRAMmbc0();
 }
-
 
 /* checks whether a joystick is needed in current input configuration
  * returns 0 if not, non-zero otherwise */
@@ -136,7 +135,6 @@ static int isjoystickneeded(struct zboyparamstype *p) {
   res &= DRV_INPUT_JOYSTICK;
   return(res);
 }
-
 
 int zboymain(int argc, char **argv) {
   struct zboyparamstype zboyparams;
@@ -210,7 +208,7 @@ int zboymain(int argc, char **argv) {
   }
 
   /*InitRAM() */    /* Init RAM areas to random values (as in a real GameBoy) */
-  if ((RomInfos.Battery != 0) && (RomInfos.RamSize > 0)) LoadBattRAM();  /* check for battery-saved RAM */
+//  if ((RomInfos.Battery != 0) && (RomInfos.RamSize > 0)) LoadBattRAM();  /* check for battery-saved RAM */
 
   ResetEmulator(); /* Fire up the Zilog80 monster, and init all required variables */
 
@@ -247,11 +245,11 @@ int zboymain(int argc, char **argv) {
 
   }
 
-  if ((RomInfos.Battery != 0) && (RomInfos.RamSize > 0)) SaveBattRAM();  /* save the battery-saved RAM, if any */
-  if (zboyparams.HiScoresMem != 0) SaveHiScoresMem();
+  //if ((RomInfos.Battery != 0) && (RomInfos.RamSize > 0)) SaveBattRAM();  /* save the battery-saved RAM, if any */
+  //if (zboyparams.HiScoresMem != 0) SaveHiScoresMem();
   zboy_saveconfig(&zboyparams);
 
-  if (NetPlay != 0) net_close();
+//  if (NetPlay != 0) net_close();
 
   /* shutdown the I/O subsystem */
   drv_close();
