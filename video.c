@@ -200,7 +200,7 @@ inline void DrawBackground( uint32_t CurScanline ) {
 	  case 4:  setPixel( PixelX++, 0, TileBuffer[u++] );
 	  case 3:  setPixel( PixelX++, 0, TileBuffer[u++] );
 	  case 2:  setPixel( PixelX++, 0, TileBuffer[u++] );
-	  case 1:  setPixel( PixelX++, 0, TileBuffer[u++] );
+	  case 1:  setPixel( PixelX++, 0, TileBuffer[u] );
 	  case 0:
 	  break;
 	  };

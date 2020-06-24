@@ -49,22 +49,6 @@ int CurRamBank = 0;           /* Current RAM bank selection */
 // #define MemoryReadSpecial MBC0_MemoryRead
 
 
-
-void InitRAM(void) {  /* Init the RAM areas to random values, as in a real GameBoy */
-  /*
-  FOR x = LBOUND(MemoryInternalRAM) TO UBOUND(MemoryInternalRAM)
-    MemoryInternalRAM(x) = INT(RND * 256)
-  NEXT x
-  FOR x = LBOUND(MemoryInternalHiRAM) TO UBOUND(MemoryInternalHiRAM)
-    MemoryInternalHiRAM(x) = INT(RND * 256)
-  NEXT x
-  FOR x = LBOUND(MemoryBankedRAM) TO UBOUND(MemoryBankedRAM)
-    MemoryBankedRAM(x) = INT(RND * 256)
-  NEXT x */
-  // for (int x = 0; x < 65536; x++) MemoryMAP[x] = (((unsigned) rand()) % 256);
-}
-
-
 /* Below are generic MemoryRead and MemoryWrite routines. These routines  *
  * check if the called address is a well-known address. If this address   *
  * is behaving the same on all known MBC controllers, then it is answered *
@@ -97,7 +81,7 @@ void NULLWrite( uint32_t addr, uint8_t data, uint8_t *bank ){}
   return RAMette[ ramidx[ReadAddr>>5] ];
 }*/
 
-#define MemoryRead(a) (RAMette[ ramidx[ (a) >> 5 ] ][ (a) ])
+#define MemoryRead(a) (getMemoryBlock(a)[ (a) ])
 
 /*inline uint8_t MemoryRead(int ReadAddr) {
   return RAMette[ ramidx[ReadAddr>>5] ][ ReadAddr ];
@@ -105,9 +89,24 @@ void NULLWrite( uint32_t addr, uint8_t data, uint8_t *bank ){}
 
 //#define MemoryWrite(a,d) {int i=ramidx[ a >> 5];writeHandlers[ i ]( a, d, RAMette[i] );}
 
-inline void MemoryWrite(uint32_t WriteAddr, uint8_t DataHolder) {
-  int id = ramidx[WriteAddr>>5];
-  writeHandlers[ id ]( WriteAddr, DataHolder, RAMette[id] );
+__attribute__( ( always_inline ) ) void MemoryWrite(uint32_t WriteAddr, uint8_t DataHolder) {
+  int id = ramidx[ WriteAddr >> 5 ];
+  switch( ramidx[ WriteAddr >> 5 ] ){
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 6:
+    case 7:
+      RAMette[id][WriteAddr] = DataHolder;
+    return;
+    case 5:
+      IOWrite( WriteAddr, DataHolder, RAMette[id] );
+    return;
+    default:
+      writeHandlers[ id ]( WriteAddr, DataHolder, RAMette[id] );
+    return;
+  };
 }
 
 //#define RAMWrite(a,d,b) b[a]=d;
