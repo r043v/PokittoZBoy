@@ -30,25 +30,16 @@
 #define pVer "0.60"
 #define pDate "2010,2011,2012,2013,2014,2015"
 
-/*  The options below make zBoy to be compiled in debug mode, and optionally trace CPU activity to a trace file */
-/* #define DEBUGMODE */
-/* #define DEBUGTRACEFILE */
-/* #define MEMDUMP_AT_EXIT */
-
-/* Produce a stand-alone exe file with an embedded ROM file */
-/* #define EMBEDROM "embedrom/dracula.c" */
-/* #define EMBEDROM "embedrom/pacman.c" */
-#define EMBEDROM "embedrom/2048.h"
-
-#ifndef DEBUGMODE   /* If not in debugmode, then disable PrintDebug */
-  /* #define PrintDebug printf */
-  /* #define PrintDebug(...) */
-//  void PrintDebug(char *s, ...) {
-//    s = s;  /* just to make gcc warnings shut up */
-//  }
-  #else
-//  #define PrintDebug printf
+#ifndef ROM
+#define ROM 2048
 #endif
+
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+
+#define romDir roms
+
+#define EMBEDROM STR(romDir/ROM.h)
 
 #include "zboystructs.h"
 
@@ -67,13 +58,13 @@ unsigned int GraphicWidth, GraphicHeight;
 unsigned int UserMessageFramesLeft = 0;
 
 /* the zboyversion() function is used by many modules to display the app version */
-char *zboyversion(void) {
+/*char *zboyversion(void) {
   return(pVer);
-}
+}*/
 /* the zboyversion() function is used by many modules to display the app date */
-char *zboydate(void) {
+/*char *zboydate(void) {
   return(pDate);
-}
+}*/
 
 //#include "about.h"
 #include "declares.h"         /* Some SUB/FUNCTION declarations */

@@ -280,8 +280,9 @@ CXX_FLAGS += -DTARGET_LIKE_CORTEX_M0
 C_FLAGS += -D_OSCT=2
 CXX_FLAGS += -D_OSCT=2
 
-CFLAGS += -Wfatal-errors
-CXXFLAGS += -Wfatal-errors
+#included rom
+C_FLAGS += -DROM=$(rom)
+CXX_FLAGS += -DROM=$(rom)
 
 ASM_FLAGS += -x
 ASM_FLAGS += assembler-with-cpp

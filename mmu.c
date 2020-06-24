@@ -17,14 +17,13 @@ uint8_t _MemoryInternalHiRAM[128]; /* Internal RAM (high area + IE register) */
 uint8_t _MemoryBankedRAM[0x2000]; // 0x20A001];    /* Banked RAM [2MiB] */
 uint8_t * const MemoryBankedRAM = _MemoryBankedRAM - 0xA000;
 
-#ifdef EMBEDROM
+//#ifdef EMBEDROM
 #include EMBEDROM
 #define MemoryROM embedrom
 //};
-#else
-const uint8_t MemoryROM[128*1024] = {0xDE, 0xAD, 0xBE, 0xEF, 0x1, 0};
-#endif
-
+//#else
+//const uint8_t MemoryROM[128*1024] = {0xDE, 0xAD, 0xBE, 0xEF, 0x1, 0};
+//#endif
 
 uint8_t _VideoRAM[0x2000];      /* Video RAM [8KiB] */
 uint8_t _SpriteOAM[0xA0];     /* Sprite OAM memory */
