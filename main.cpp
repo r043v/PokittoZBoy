@@ -120,13 +120,13 @@ int drv_keypoll(void){
   	     btn = DRV_INPUT_KEY_F7;
       } else if( Buttons::buttons_state & (1<<UPBIT) ){
         // C + UP, switch palette
-        if( Buttons::buttons_state & (1<<CBIT) )
-          flipPalette();
-        btn = 0;
+        if( Buttons::buttons_state & (1<<CBIT) ){
+          flipPalette(); btn = 0;
+        }
       } else if( Buttons::buttons_state & (1<<DOWNBIT) ){
-        if( Buttons::buttons_state & (1<<CBIT) )
-          flipScaling();
-        btn = 0;
+        if( Buttons::buttons_state & (1<<CBIT) ){
+          flipScaling(); btn = 0;
+        }
       }
 
     if( Buttons::buttons_state & (1<<CBIT) )
@@ -276,6 +276,7 @@ extern "C" void screenInit( void ){
 int main () {
 
   Core::begin();
+  //Pokitto::initButtons();
 
   pokInitSD();
 
