@@ -53,11 +53,11 @@ extern int c_dirUp();
 uint32_t checksum;
 
 int initCRC(){
-    
+
     if( !checksum ){
 	int i;
-	for( i=0; i<sizeof(MemoryROM); ++i )
-	    checksum += MemoryROM[i];
+	for( i=0; i<sizeof(embedrom); ++i )
+	    checksum += embedrom[i];
     }
 
     char savefile[30];
@@ -72,7 +72,7 @@ int initCRC(){
 
 void LoadGame(void) {
     if( !initCRC() ) return;
-    
+
     uint32_t tmp;
     fileReadBytes( &tmp, 4 );
 
@@ -84,7 +84,7 @@ void LoadGame(void) {
     HaltState = fileGetChar();
     fileReadBytes( &TimerC, sizeof(TimerC) );
     fileReadBytes( &TotalCycles, sizeof(TotalCycles) );
-    
+
 
     fileReadBytes( &DividerCycleCounter, sizeof(DividerCycleCounter) );
 
@@ -98,7 +98,7 @@ void LoadGame(void) {
     CurRomBank = fileGetChar();
     JoyRegA = fileGetChar();
     JoyRegB = fileGetChar();
-  
+
     fileReadBytes( _MemoryInternalRAM, sizeof(_MemoryInternalRAM) );
     fileReadBytes( _MemoryInternalHiRAM, sizeof(_MemoryInternalHiRAM) );
     fileReadBytes( _MemoryBankedRAM, sizeof(_MemoryBankedRAM) );
@@ -122,12 +122,12 @@ void LoadGame(void) {
 void SaveGame(void) {
     if( !initCRC() ) return;
     SetUserMsg("SAVING...");
-  
+
   /* /\* Write header *\/ */
   fileWriteBytes("ZB01", 4);
   /* /\* Write CPU Registers *\/ */
   fileWriteBytes( &Register, sizeof(Register) );
-  
+
   /* /\* Write the IME *\/ */
   filePutChar((InterruptsState & 0xFF));
   /* /\* Write internal counters and flags *\/ */
@@ -149,7 +149,7 @@ void SaveGame(void) {
   filePutChar(CurRomBank);
   filePutChar(JoyRegA);
   filePutChar(JoyRegB);
-  
+
   fileWriteBytes( _MemoryInternalRAM, sizeof(_MemoryInternalRAM) );
   fileWriteBytes( _MemoryInternalHiRAM, sizeof(_MemoryInternalHiRAM) );
   fileWriteBytes( _MemoryBankedRAM, sizeof(_MemoryBankedRAM) );
@@ -157,7 +157,7 @@ void SaveGame(void) {
   fileWriteBytes( _SpriteOAM, sizeof(_SpriteOAM) );
   fileWriteBytes( _IoRegisters, sizeof(_IoRegisters) );
   fileWriteBytes( RAMette, sizeof(RAMette) );
-  
+
   /* for (x = 0xC000; x < 0xE000; x++) filePutChar(MemoryInternalRAM[x]); */
   /* for (x = 0xFF80; x <= 0xFFFF; x++) filePutChar(MemoryInternalHiRAM[x]); */
   /* for (x = 0xA000; x < RomInfos.RamSize; x++) filePutChar(MemoryBankedRAM[x]);  /\* Check RAM size (if any) via RomInfos.RamSize *\/ */

@@ -17,9 +17,22 @@ uint8_t _MemoryInternalHiRAM[128]; /* Internal RAM (high area + IE register) */
 uint8_t _MemoryBankedRAM[0x2000]; // 0x20A001];    /* Banked RAM [2MiB] */
 uint8_t * const MemoryBankedRAM = _MemoryBankedRAM - 0xA000;
 
-//#ifdef EMBEDROM
+
+#ifndef ROM
+#define ROM 2048
+#endif
+
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
+
+#define romDir roms
+
+#define EMBEDROM STR(romDir/ROM.h)
+
 #include EMBEDROM
-#define MemoryROM embedrom
+
+//#define MemoryROM embedrom
+//uint8_t * MemoryROM = (uint8_t*)embedrom;
 //};
 //#else
 //const uint8_t MemoryROM[128*1024] = {0xDE, 0xAD, 0xBE, 0xEF, 0x1, 0};
@@ -56,7 +69,7 @@ int CurRamBank = 0;           /* Current RAM bank selection */
 
 uint8_t * const ramidx = (uint8_t *) 0x20000000;
 uint8_t * RAMette[9] = {
-  MemoryROM,
+  embedrom,//MemoryROM,
   _VideoRAM - 0x8000,
   _MemoryInternalRAM - 0xC000,
   _MemoryInternalRAM - 0xC000 - 8192,
@@ -64,7 +77,7 @@ uint8_t * RAMette[9] = {
   _IoRegisters - 0xFF00,
   _MemoryInternalHiRAM - 0xFF80,
   _MemoryBankedRAM - 0xA000,
-  MemoryROM
+  embedrom//MemoryROM
 };
 
 

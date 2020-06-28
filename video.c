@@ -17,7 +17,7 @@
    Generating an interrupt means "enabling the corresponding bit of the IF register (FF0F)"
 */
 
-#include "qsort.c"  /* provides the tableQsort() sub, used to sort sprites in DrawSprites */
+//#include "qsort.c"  /* provides the tableQsort() sub, used to sort sprites in DrawSprites */
 
 unsigned int HideBackgroundDisplay = 0;
 unsigned int HideSpritesDisplay = 0;
@@ -86,17 +86,18 @@ inline void DrawBackground( uint32_t CurScanline ) {
 
   if (((IoRegisters[0xFF40] & 1) == 0) || (HideBackgroundDisplay != 0)) { /* if "BackgroundEnabled" bit is not set, or bg has been forced OFF by user, then do not draw background (fill with black instead) */
     //for (x = 0; x < 160; x++) setPixel(x, 0, 3);  /* black */
-    u_int32_t *p = (u_int32_t*)framebuffer, *end = &p[40];
+    u_int32_t *p = (u_int32_t*)framebuffer;
+    //static u_int32_t *end = &p[40];
     do {
       *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0;
       *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0;
-    } while( p != end );
+    } while( p != (u_int32_t*)&framebuffer[160] );
 
     //memset( framebuffer,0,160 ); // white
-    //return;
+    return;
   }
-  else
-  {  /* If "BackgroundEnabled" bit is set then draw background */
+//  else
+//  {  /* If "BackgroundEnabled" bit is set then draw background */
     /* Get starting address of tiles data */
     { register u_int32_t tmp = IoRegisters[0xFF40];
       TilesDataAddr  = tmp & 16 ? 0x8000 : 0x8800;
@@ -212,7 +213,7 @@ inline void DrawBackground( uint32_t CurScanline ) {
 	  TileNum = (TileNum+1) & 0x1F;
         } /* for(x) */
       /*NEXT y */
-  }
+//  }
 }
 
 
@@ -235,12 +236,21 @@ inline void DrawWindow( uint32_t CurScanline ) {
    The palette for both background and window is located at FF47h (BGP)
   */
 
+if( CurScanline > 143
+|| HideWindowDisplay
+|| ( ( IoRegisters[0xFF40] & bx00100001 ) != bx00100001 )
+|| IoRegisters[0xFF4B] > 166
+|| IoRegisters[0xFF4A] > CurScanline
+|| IoRegisters[0xFF4B] < 7
+) return;
+
   static signed int x, y, z, t, UbyteBuff1, UbyteBuff2, pixrow;
   static signed int TilesMapAddress, TilesDataAddress, TileNum, TileToDisplay, PixelX, TileTempAddress;
   static uint8_t TileBufferWin[64];
-  if (((IoRegisters[0xFF40] & bx00000001) != 0) && (HideWindowDisplay == 0)) {  /* if background+window bit is enabled at LCDC, then... */
-    if ((IoRegisters[0xFF40] & bx00100000) != 0) {  /* if window bit is enabled at LCDC, then... */
-      if ((IoRegisters[0xFF4B] <= 166) && (IoRegisters[0xFF4A] <= CurScanline) && (IoRegisters[0xFF4B] >= 7) && (CurScanline <= 143)) { /* if WX and WY are visible, then... */
+/*  if (((IoRegisters[0xFF40] & bx00000001) != 0) && (HideWindowDisplay == 0)) {
+    if ((IoRegisters[0xFF40] & bx00100000) != 0) {
+      if ((IoRegisters[0xFF4B] <= 166) && (IoRegisters[0xFF4A] <= CurScanline) && (IoRegisters[0xFF4B] >= 7) && (CurScanline <= 143)) {
+*/
         if ((IoRegisters[0xFF40] & 64) == 0) {
             TilesMapAddress = 0x9800;
           } else {
@@ -297,96 +307,226 @@ inline void DrawWindow( uint32_t CurScanline ) {
           }
           TileNum++;   /* I'm adding 1 instead of relying on x value (faster) */
         }
-      }
+/*      }
     }
-  }
+  }*/
 }
 
+#define u32 u_int32_t
+#define u8 u_int8_t
+
+#pragma pack(push, 1)
+
+union sprite {
+  u32 raw;
+  struct {
+    u8 y;
+    u8 x;
+    u8 data;
+    union {
+      u8 flag;
+      struct {
+        u8 z:1;
+        u8 yflip:1;
+        u8 xflip:1;
+        u8 palette:1;
+        u8:4;
+      };
+    }
+  };
+};
+
+#pragma pack(pop)
+
+union sprite * sprites = &SpriteOAM[0xFE00];
+union sprite * spritesEnd = &SpriteOAM[0xFE00 + 40*4];//sprites + 40;
+
+//extern void sqsort( int*f, int*l );
+//extern void asmqsort( int*f, int n );
 
 void DrawSprites( int32_t CurScanline ) {
 
+  if( ( IoRegisters[0xFF40] & bx00000010 == 0 ) || HideSpritesDisplay ) return;
+
   int PatternNum, SpriteFlags, UbyteBuff1, UbyteBuff2, SpritePalette, x, y, z, t, xx;
-  int SpritePosX, SpritePosY, SpriteMaxY;
-  int NumberOfSpritesToDisplay;
+  int SpritePosX, SpritePosY;
+  u_int32_t SpriteMaxY;
+  u_int8_t NumberOfSpritesToDisplay = 0;
   static uint8_t SpriteBuff[128];
-  static int ListOfSpritesToDisplay[40];
+  static int ListOfSpritesToDisplay[40] = { 0 };
 
-  if (((IoRegisters[0xFF40] & bx00000010) > 0) && (HideSpritesDisplay == 0)) {
-    NumberOfSpritesToDisplay = 0;
+    //SpriteMaxY = IoRegisters[0xFF40] & bx00000100 ? 15 : 7;
 
-    if ((IoRegisters[0xFF40] & bx00000100) == 0) {
+    SpriteMaxY = IoRegisters[0xFF40] & bx00000100 ? 15 : 7;
+
+/*    if ((IoRegisters[0xFF40] & bx00000100) == 0) {
         SpriteMaxY = 7;
       } else {
         SpriteMaxY = 15;
-    }
+    }*/
 
+    union sprite *sprite = sprites;
+    u_int32_t * display = (u_int32_t*)ListOfSpritesToDisplay;
+    u_int32_t scanline = CurScanline + 16;
+
+    while( sprite != spritesEnd ){
+      if( !sprite->x || sprite->x >= 168 // on screen x
+       || !sprite->y //|| sprite->y >= 160 // on screen y
+       || sprite->y > scanline // on scanline
+       || sprite->y + SpriteMaxY < scanline
+      ){ sprite++; continue; } // no!
+
+      // visible at this scanline
+      *display++ = ( sprite->x << 6 ) | ( sprite - sprites ) ;
+      sprite++;
+    };
+
+    NumberOfSpritesToDisplay = display - (u_int32_t*)ListOfSpritesToDisplay;
+    if( !NumberOfSpritesToDisplay ) return;
+/*
     for (x = 0; x < 40; x++) {
       SpritePosY = SpriteOAM[0xFE00 + (x << 2)] - 16;     // sprite's ypos on screen
       SpritePosX = SpriteOAM[0xFE00 + (x << 2) + 1] - 8;  // sprite's xpos on screen
 
       if ((SpritePosX > -8) && (SpritePosY >= (CurScanline - SpriteMaxY)) && (SpritePosX < 160) && (SpritePosY <= CurScanline)) {
-        ListOfSpritesToDisplay[NumberOfSpritesToDisplay] = ((SpritePosX + 8) << 6) | x;
-	//* compute an ID that will allow to sort entries easily
+        ListOfSpritesToDisplay[NumberOfSpritesToDisplay] = ((SpritePosX + 8) << 8) | x;
+	// compute an ID that will allow to sort entries easily
         NumberOfSpritesToDisplay += 1;
       }
     }
-
+*/
     // Sort the list of sprites to display
-    tableQsort(ListOfSpritesToDisplay, NumberOfSpritesToDisplay - 1);
+    if( NumberOfSpritesToDisplay > 1 )
+      cqsort( ListOfSpritesToDisplay, &ListOfSpritesToDisplay[NumberOfSpritesToDisplay - 1] );
+//      tableQsort(ListOfSpritesToDisplay, NumberOfSpritesToDisplay - 1);
 
     // And here we are going to display each sprite (in the right order, of course)
     for (xx = 0; xx < NumberOfSpritesToDisplay; xx++) {
-          x = (ListOfSpritesToDisplay[xx] & bx00111111);  /* Retrieve 6 least significant bits (these are the actual ID of the sprite) */
+          x = ListOfSpritesToDisplay[xx] & bx00111111;  /* Retrieve 6 least significant bits (these are the actual ID of the sprite) */
 
-          SpritePosY = SpriteOAM[0xFE00 + (x << 2)] - 16;     // sprite's ypos on screen
-          SpritePosX = SpriteOAM[0xFE00 + (x << 2) + 1] - 8;  // sprite's xpos on screen
-          PatternNum = SpriteOAM[0xFE00 + (x << 2) + 2];      // pattern num
+          u_int8_t * p = &SpriteOAM[ 0xFE00 + (x << 2) ];
+
+          SpritePosY = *p++ - 16;//SpriteOAM[0xFE00 + (x << 2)] - 16;     // sprite's ypos on screen
+          SpritePosX = *p++ - 8;//SpriteOAM[0xFE00 + (x << 2) + 1] - 8;  // sprite's xpos on screen
+          PatternNum = *p++;//SpriteOAM[0xFE00 + (x << 2) + 2];      // pattern num
           if (SpriteMaxY == 15) PatternNum &= bx11111110;     // the LSB is ignored in 8x16 sprite mode
 
-          SpriteFlags = SpriteOAM[0xFE00 + (x << 2) + 3];  // Flags
-          if ((SpriteFlags & bx00010000) == 0) {
+          SpriteFlags = *p;//SpriteOAM[0xFE00 + (x << 2) + 3];  // Flags
+
+          SpritePalette = SpriteFlags & bx00010000 ? 2 : 1;
+
+/*          if ((SpriteFlags & bx00010000) == 0) {
 	    SpritePalette = 1; // use OBJ0 palette
 	  } else {
 	    SpritePalette = 2; // use OBJ1 palette
           }
+*/
 
-          for (z = 0; z <= ((SpriteMaxY << 1) + 1); z += 2) {
-            UbyteBuff1 = VideoRAM[0x8000 + (PatternNum << 4) + z];
-            UbyteBuff2 = VideoRAM[0x8000 + (PatternNum << 4) + z + 1];
-            SpriteBuff[(z << 2) + 7] =  ((UbyteBuff2 & bx00000001) | ((UbyteBuff1 & bx00000001) << 1));
-            SpriteBuff[(z << 2) + 6] = (((UbyteBuff2 & bx00000010) >> 1) | (((UbyteBuff1 & bx00000010) >> 1) << 1));
-            SpriteBuff[(z << 2) + 5] = (((UbyteBuff2 & bx00000100) >> 2) | (((UbyteBuff1 & bx00000100) >> 2) << 1));
-            SpriteBuff[(z << 2) + 4] = (((UbyteBuff2 & bx00001000) >> 3) | (((UbyteBuff1 & bx00001000) >> 3) << 1));
-            SpriteBuff[(z << 2) + 3] = (((UbyteBuff2 & bx00010000) >> 4) | (((UbyteBuff1 & bx00010000) >> 4) << 1));
-            SpriteBuff[(z << 2) + 2] = (((UbyteBuff2 & bx00100000) >> 5) | (((UbyteBuff1 & bx00100000) >> 5) << 1));
-            SpriteBuff[(z << 2) + 1] = (((UbyteBuff2 & bx01000000) >> 6) | (((UbyteBuff1 & bx01000000) >> 6) << 1));
-            SpriteBuff[(z << 2) + 0] = (((UbyteBuff2 & bx10000000) >> 7) | (((UbyteBuff1 & bx10000000) >> 7) << 1));
+          p = &VideoRAM[ 0x8000 + ( PatternNum << 4 ) ];
+          register u_int8_t * s = SpriteBuff;
+          u_int8_t * pend = &p[ (SpriteMaxY<<1) + 2 ];
 
-          }
-          //  Here I perform any required transformation on the sprite (vertical and/or horizontal mirroring)
-	  // Bit 6 = Y flip (vertical mirror)
-	  // Bit 5 = X flip (horizontal mirror)
-          if ((SpriteFlags & bx00100000) > 0) {
-            for (z = 0; z <= SpriteMaxY; z++) {
-              t = SpriteBuff[(z << 3) + 0];
-              SpriteBuff[(z << 3) + 0] = SpriteBuff[(z << 3) + 7];
-              SpriteBuff[(z << 3) + 7] = t;
-              t = SpriteBuff[(z << 3) + 1];
-              SpriteBuff[(z << 3) + 1] = SpriteBuff[(z << 3) + 6];
-              SpriteBuff[(z << 3) + 6] = t;
-              t = SpriteBuff[(z << 3) + 2];
-              SpriteBuff[(z << 3) + 2] = SpriteBuff[(z << 3) + 5];
-              SpriteBuff[(z << 3) + 5] = t;
-              t = SpriteBuff[(z << 3) + 3];
-              SpriteBuff[(z << 3) + 3] = SpriteBuff[(z << 3) + 4];
-              SpriteBuff[(z << 3) + 4] = t;
+          if( SpriteFlags & bx00100000 ){ // xflip
+            while( p != pend ){
+              register u_int8_t b1 = *p++;
+              register u_int8_t b2 = *p++;
+              *s++ = (((b2 & bx00000001)) | (((b1 & bx00000001)) << 1));
+              *s++ = (((b2 & bx00000010) >> 1) | (((b1 & bx00000010) >> 1) << 1));
+              *s++ = (((b2 & bx00000100) >> 2) | (((b1 & bx00000100) >> 2) << 1));
+              *s++ = (((b2 & bx00001000) >> 3) | (((b1 & bx00001000) >> 3) << 1));
+              *s++ = (((b2 & bx00010000) >> 4) | (((b1 & bx00010000) >> 4) << 1));
+              *s++ = (((b2 & bx00100000) >> 5) | (((b1 & bx00100000) >> 5) << 1));
+              *s++ = (((b2 & bx01000000) >> 6) | (((b1 & bx01000000) >> 6) << 1));
+              *s++ = (((b2 & bx10000000) >> 7) | (((b1 & bx10000000) >> 7) << 1));
+            }
+          } else { // normal
+            while( p != pend ){
+              register u_int8_t b1 = *p++;
+              register u_int8_t b2 = *p++;
+
+              *s++ = (((b2 & bx10000000) >> 7) | (((b1 & bx10000000) >> 7) << 1));
+              *s++ = (((b2 & bx01000000) >> 6) | (((b1 & bx01000000) >> 6) << 1));
+              *s++ = (((b2 & bx00100000) >> 5) | (((b1 & bx00100000) >> 5) << 1));
+              *s++ = (((b2 & bx00010000) >> 4) | (((b1 & bx00010000) >> 4) << 1));
+              *s++ = (((b2 & bx00001000) >> 3) | (((b1 & bx00001000) >> 3) << 1));
+              *s++ = (((b2 & bx00000100) >> 2) | (((b1 & bx00000100) >> 2) << 1));
+              *s++ = (((b2 & bx00000010) >> 1) | (((b1 & bx00000010) >> 1) << 1));
+              *s++ = (((b2 & bx00000001)) | (((b1 & bx00000001)) << 1));
             }
           }
 
-          if ((SpriteFlags & bx01000000) > 0) {
+
+	  // Bit 5 = X flip (horizontal mirror)
+/*          if( SpriteFlags & bx00100000 ){
+            s = SpriteBuff;
+            register u_int8_t tmp, *s2, *send = &s[ (SpriteMaxY+1)*8 ];
+            while( s != send ){
+                s2 = s + 7;
+                tmp = *s;
+                *s++ = *s2;
+                *s2-- = tmp;
+                tmp = *s;
+                *s++ = *s2;
+                *s2-- = tmp;
+                tmp = *s;
+                *s++ = *s2;
+                *s2-- = tmp;
+                tmp = *s;
+                *s = *s2;
+                *s2 = tmp;
+                s += 5;
+            }
+          }
+*/
+          if( SpriteFlags & bx01000000 ) {
 	    // Bit 6 = Y flip (vertical mirror)
-	    // Bit 5 = X flip (horizontal mirror)
-            for (z = 0; z < 8; z++) {
+            register u_int32_t tmp, *l1 = (u_int32_t*)SpriteBuff, *l2 = &l1[ SpriteMaxY<<1 ];
+            //u_int32_t lend = &l1[ SpriteMaxY + 1 ];
+            while( 1 ){// l1 != lend ){
+              // 4 lines for unroll a bit
+              // 0
+              tmp = *l1;
+              *l1++ = *l2;
+              *l2++ = tmp;
+              tmp = *l1;
+              *l1++ = *l2;
+              *l2 = tmp;
+              l2 -= 3;
+
+              // 1
+              tmp = *l1;
+              *l1++ = *l2;
+              *l2++ = tmp;
+
+              tmp = *l1;
+              *l1++ = *l2;
+              *l2 = tmp;
+              l2 -= 3;
+
+              // 2
+              tmp = *l1;
+              *l1++ = *l2;
+              *l2++ = tmp;
+
+              tmp = *l1;
+              *l1++ = *l2;
+              *l2 = tmp;
+              l2 -= 3;
+
+              // 3
+              tmp = *l1;
+              *l1++ = *l2;
+              *l2++ = tmp;
+
+              tmp = *l1;
+              *l1++ = *l2;
+              *l2-- = tmp;
+
+              if( l1 == l2 ) break;
+              l2 -= 2;
+            };
+
+/*            for (z = 0; z < 8; z++) {
               if (SpriteMaxY == 7) {
 		// Swap 8 pixels high sprites
 		for (y = 0; y < 25; y += 8) {
@@ -400,34 +540,34 @@ void DrawSprites( int32_t CurScanline ) {
 		  SpriteBuff[y + z] = SpriteBuff[(120 - y) + z];
 		  SpriteBuff[(120 - y) + z] = t;
 		}
-              }
-            }
+  }
+}*/
           }
 
           // Now apply the sprite onscreen...
           UbyteBuff1 = GetGbPalette(pal_BGP, 0);  // Get background color into UbyteBuff1
           /*for (z = 0; z <= SpriteMaxY; z++) { */
-	  z = (CurScanline - SpritePosY); /* Apply to screen only one line of the sprite (no need to do more) */
-	  /*if ((z < 0) || (z > SpriteMaxY)) printf("Damn, z is sick! z = %d (CurScanline = %d ; SpritePosY = %d)\n", z, CurScanline, SpritePosY); */
-	  for (t = 0; t < 8; t++) {
-	    /*  Update all pixels, but not 0 (which are transparent for a sprite) */
-	    if (((SpritePosX + t) >= 0) && ((SpritePosY + z) >= 0) && ((SpritePosX + t) < 160) && ((SpritePosY + z) < 144)) { /* don't try to write outside the screen */
-	      if (SpriteBuff[(z << 3) | t] > 0) {  /* color 0 is transparent on sprites */
-		/* If bit 7 of the sprite's flags is set, then the sprite is "hidden" (prevails only over color 0 of background) */
-		if (((SpriteFlags & bx10000000) == 0) || getPixel(SpritePosX + t, 0) == UbyteBuff1) { /* Sprite's priority over background */
-		  /*ScreenBuffer(SpritePosX + t, SpritePosY + z) = GbPalette(SpriteBuff((z << 3) + t), SpritePalette) */
-		  if (SpritePalette == 1) { /* OBJ0 */
-		    setPixel(SpritePosX + t, 0, GetGbPalette(pal_OBP0, SpriteBuff[(z << 3) | t])+4);// | 64; /* | 64 is for marking it as 'OBJ0' (for possible later colorization */
-		  } else { /* OBJ1 */
-		    setPixel(SpritePosX + t, 0, GetGbPalette(pal_OBP1, SpriteBuff[(z << 3) | t])+8);// | 128; /* | 128 is for marking it as 'OBJ1' (for possible later colorization */
-		  }
-		}
-	      }
-	    }
-	  }
+
+      	  z = (CurScanline - SpritePosY); /* Apply to screen only one line of the sprite (no need to do more) */
+      	  /*if ((z < 0) || (z > SpriteMaxY)) printf("Damn, z is sick! z = %d (CurScanline = %d ; SpritePosY = %d)\n", z, CurScanline, SpritePosY); */
+      	  for (t = 0; t < 8; t++) {
+      	    /*  Update all pixels, but not 0 (which are transparent for a sprite) */
+      	    if (((SpritePosX + t) >= 0) && ((SpritePosY + z) >= 0) && ((SpritePosX + t) < 160) && ((SpritePosY + z) < 144)) { /* don't try to write outside the screen */
+      	      if (SpriteBuff[(z << 3) | t] > 0) {  /* color 0 is transparent on sprites */
+            		/* If bit 7 of the sprite's flags is set, then the sprite is "hidden" (prevails only over color 0 of background) */
+            		if (((SpriteFlags & bx10000000) == 0) || getPixel(SpritePosX + t, 0) == UbyteBuff1) { /* Sprite's priority over background */
+            		  /*ScreenBuffer(SpritePosX + t, SpritePosY + z) = GbPalette(SpriteBuff((z << 3) + t), SpritePalette) */
+            		  if (SpritePalette == 1) { /* OBJ0 */
+            		    setPixel(SpritePosX + t, 0, GetGbPalette(pal_OBP0, SpriteBuff[(z << 3) | t])+4);// | 64; /* | 64 is for marking it as 'OBJ0' (for possible later colorization */
+            		  } else { /* OBJ1 */
+            		    setPixel(SpritePosX + t, 0, GetGbPalette(pal_OBP1, SpriteBuff[(z << 3) | t])+8);// | 128; /* | 128 is for marking it as 'OBJ1' (for possible later colorization */
+            		  }
+            		}
+      	      }
+      	    }
+      	  }
           /*} */
     }
-  }
 }
 
 

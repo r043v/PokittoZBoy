@@ -1,4 +1,4 @@
-
+#include <algorithm>
 #include "Pokitto.h"
 
 using namespace Pokitto;
@@ -9,6 +9,12 @@ extern u_int32_t scaling;
 
 extern "C" {
 #include "drv.h"
+
+//void asmqsort( int*f, int n );
+
+void cqsort( int*f, int*l ){
+  std::sort(f,l);
+}
 
 volatile uint32_t *LCD = reinterpret_cast< volatile uint32_t * >(0xA0002188);
 

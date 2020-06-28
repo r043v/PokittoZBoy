@@ -24,6 +24,7 @@ SRCDIR := $(CURDIR)
 vpath %.cpp .
 vpath %.c .
 vpath %.h .
+vpath %.s .
 
 # Boiler-plate
 ###############################################################################
@@ -152,10 +153,14 @@ OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/
 OBJECTS += BUILD/main.o
 OBJECTS += BUILD/zboy.o
 OBJECTS += BUILD/drv_pok.o
+OBJECTS += BUILD/config.o
+#OBJECTS += BUILD/rom.o
+
 #OBJECTS += BUILD/loadpal.o
 #OBJECTS += BUILD/loadrom.o
 #OBJECTS += BUILD/net_none.o
-OBJECTS += BUILD/config.o
+#OBJECTS += BUILD/asmqsort.o
+#OBJECTS += asmqsort.s.o
 #OBJECTS += BUILD/crc32.o
 #OBJECTS += BUILD/wordwrap.o
 
@@ -273,8 +278,12 @@ CXX_FLAGS += -DDEVICE_SPI=1
 CXX_FLAGS += -DDEVICE_ANALOGIN=1
 CXX_FLAGS += -DDEVICE_PWMOUT=1
 CXX_FLAGS += -DTARGET_LIKE_CORTEX_M0
-#CXX_FLAGS += -include
+
+C_FLAGS += -Wfatal-errors
+CXX_FLAGS += -Wfatal-errors
 #CXX_FLAGS += mbed_config.h
+
+
 
 #overclock
 C_FLAGS += -D_OSCT=2
@@ -322,7 +331,7 @@ ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP
 ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X
 
 
-LD_FLAGS :=-Wl,--gc-sections -Wl,--wrap,main -Wl,--wrap,free -Wl,--wrap,_memalign_r -Wl,-n --specs=nano.specs -mcpu=cortex-m0plus -mthumb
+LD_FLAGS :=-Wl,--print-memory-usage,--gc-sections -Wl,--wrap,main -Wl,--wrap,free -Wl,--wrap,_memalign_r -Wl,-n --specs=nano.specs -mcpu=cortex-m0plus -mthumb
 LD_SYS_LIBS :=-Wl,--start-group -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys  -Wl,--end-group
 
 # Tools and Flags
@@ -336,16 +345,20 @@ all: $(BPROJECT).bin $(BPROJECT).hex size
 	+@$(call MAKEDIR,$(OBJDIR))
 
 
-.s.o:
+#BUILD/%.o : %.s
+#	+@$(call MAKEDIR,$(dir $@))
+#	+@echo "Assemble: $(notdir $<)"
+#	@$(AS) -c $(ASM_FLAGS) -o $@ $<
+
+%.s.o : %.s
 	+@$(call MAKEDIR,$(dir $@))
 	+@echo "Assemble: $(notdir $<)"
 	@$(AS) -c $(ASM_FLAGS) -o $@ $<
 
-
-.S.o:
-	+@$(call MAKEDIR,$(dir $@))
-	+@echo "Assemble: $(notdir $<)"
-	@$(AS) -c $(ASM_FLAGS) -o $@ $<
+#asmqsort.s.o:
+#	+@$(call MAKEDIR,$(dir $@))
+#	+@echo "Assemble: $(notdir $<)"
+#	@$(AS) -c $(ASM_FLAGS) -o asmqsort.s.o asmqsort.s
 
 BUILD/%.o : %.c
 	+@$(call MAKEDIR,$(dir $@))

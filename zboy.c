@@ -30,17 +30,6 @@
 #define pVer "0.60"
 #define pDate "2010,2011,2012,2013,2014,2015"
 
-#ifndef ROM
-#define ROM 2048
-#endif
-
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
-
-#define romDir roms
-
-#define EMBEDROM STR(romDir/ROM.h)
-
 #include "zboystructs.h"
 
 struct RomInformations RomInfos;
@@ -104,7 +93,7 @@ unsigned int UserMessageFramesLeft = 0;
 uint8_t mapper = 0;
 
 void checkMapper( void ){
-  mapper = MemoryROM[0x147];
+  mapper = embedrom[0x147];
   if( mapper == 6 || mapper == 3 ) mapper = 1;
   if( mapper > 1 ) mapper = 0;
 
@@ -130,7 +119,7 @@ static int isjoystickneeded(struct zboyparamstype *p) {
 int zboymain(int argc, char **argv) {
   struct zboyparamstype zboyparams;
   int UsedCycles;
-  RomInfos.MemoryROM_PTR = MemoryROM;
+  RomInfos.MemoryROM_PTR = embedrom;
 
   /* preload a default zBoy configuration */
   zboy_loaddefaultconfig(&zboyparams);
