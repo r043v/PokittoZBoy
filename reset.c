@@ -6,7 +6,7 @@
 void ResetEmulator(void) {  /* Resets all internal states of the emulator */
   int x;
 
-  Register.PC = 0x100;   /* The execution of code starts at 0x100 (Cartridge ROM) */
+  Register->PC = 0x100;   /* The execution of code starts at 0x100 (Cartridge ROM) */
 
   for (x = 0x8000; x <= 0x9FFF; x++) {  /* Reset all VRAM memory (this */
     VideoRAM[x] = 0;                    /* is done by a real GameBoy as */
@@ -14,8 +14,8 @@ void ResetEmulator(void) {  /* Resets all internal states of the emulator */
   WriteRegBC(00, 0x13);  /* 0013h */
   WriteRegDE(00, 0xD8);  /* 00D8h */
   WriteRegHL(01, 0x4D);  /* 014Dh */
-  Register.SP = 0xFFFE;  /* Stack pointer is inited at &hFFFE */
-  Register.SPBlock = getMemoryBlock( Register.SP );
+  Register->SP = 0xFFFE;  /* Stack pointer is inited at &hFFFE */
+  Register->SPBlock = getMemoryBlock( Register->SP );
 
   IoRegisters[0xFF05] = 0x00;   /* TIMA */
   IoRegisters[0xFF06] = 0x00;   /* TMA */
@@ -57,7 +57,7 @@ void ResetEmulator(void) {  /* Resets all internal states of the emulator */
   SetFlagZ();      /* Set some flags */
   SetFlagH();      /* - as done by */
   SetFlagC();      /* the NO$CASH */
-  Register.A = 1;  /* GB emulator. */
+  Register->A = 1;  /* GB emulator. */
   InterruptsState = 0;   /* IME is OFF at start (otherise "Hook" or "Pagemaster" don't even start, plus NO$GMB disables IME at start, too) */
   HaltBug = 0;    /* Emulation of the "HALT bug", */
   HaltState = 0;  /* must be all reset at start. */

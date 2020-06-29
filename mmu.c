@@ -101,8 +101,25 @@ void NULLWrite( uint32_t addr, uint8_t data, uint8_t *bank ){}
 
 //#define MemoryWrite(a,d) {int i=ramidx[ a >> 5];writeHandlers[ i ]( a, d, RAMette[i] );}
 
+extern uint8_t mapper;
+
 __attribute__( ( always_inline ) ) void MemoryWrite(uint32_t WriteAddr, uint8_t DataHolder) {
+
   int id = ramidx[ WriteAddr >> 5 ];
+
+  if( !id || id == 8 ){
+    if( !mapper ) return;
+    MBC1Write( WriteAddr, DataHolder, RAMette[id] );
+    return;
+  }
+
+  if( id == 5 ){
+    IOWrite( WriteAddr, DataHolder, RAMette[id] );
+    return;
+  }
+
+  RAMette[id][WriteAddr] = DataHolder;
+/*
   switch( ramidx[ WriteAddr >> 5 ] ){
     case 1:
     case 2:
@@ -119,6 +136,7 @@ __attribute__( ( always_inline ) ) void MemoryWrite(uint32_t WriteAddr, uint8_t 
       writeHandlers[ id ]( WriteAddr, DataHolder, RAMette[id] );
     return;
   };
+*/
 }
 
 //#define RAMWrite(a,d,b) b[a]=d;

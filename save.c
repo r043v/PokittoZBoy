@@ -112,7 +112,7 @@ void LoadGame(void) {
     fileReadBytes( check, 11 );
 
     fileClose();
-    Register.SPBlock = getMemoryBlock( Register.SP );
+    Register->SPBlock = getMemoryBlock( Register->SP );
     if( strcmp( check, "END-OF-FILE" ) ){
 	check[11] = 0;
 	SetUserMsg( check );

@@ -207,7 +207,7 @@ int zboymain(int argc, char **argv) {
     if( HaltState ){
       VideoSysUpdate(UsedCycles, &zboyparams);   /* Update Video subsystem */
       CheckJoypad(UsedCycles , &zboyparams);  /* Update the Joypad register */
-      CheckInterrupts( &Register );
+      CheckInterrupts();// &Register );
       UsedCycles = 0;
     }
 
@@ -221,7 +221,7 @@ int zboymain(int argc, char **argv) {
     CheckJoypad(UsedCycles , &zboyparams);  /* Update the Joypad register */
 
     if ( InterruptsState || HaltState )
-      CheckInterrupts( &Register );
+      CheckInterrupts();// &Register );
 
   }
 

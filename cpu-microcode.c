@@ -7,114 +7,110 @@
 
 
 /*
-inline void WriteRegAF(x)
-  Register.F = (x AND bx11111111)
-  Register.A = ((x >> 8) AND bx11111111)
+__attribute__( ( always_inline ) ) void WriteRegAF(x)
+  Register->F = (x AND bx11111111)
+  Register->A = ((x >> 8) AND bx11111111)
 }
 */
 // ZNHC0000
-inline int16_t ReadRegAF(){
+__attribute__( ( always_inline ) ) int16_t ReadRegAF(){
 return (DwordVal(
-		 Register.FZ |
-		 Register.FN |
-		 Register.FH |
-		 Register.FC,
-		 Register.A));
+		 Register->FZ |
+		 Register->FN |
+		 Register->FH |
+		 Register->FC,
+		 Register->A));
 }
 
-inline int8_t ReadRegF(){
-  return Register.FZ |	
-    Register.FN |		
-    Register.FH |		
-    Register.FC;
-  
+__attribute__( ( always_inline ) ) int8_t ReadRegF(){
+  return Register->FZ |
+    Register->FN |
+    Register->FH |
+    Register->FC;
+
 }
 
-inline void WriteRegF(uint8_t f){
-  Register.FZ = f & ( 1 << 7 );
-  Register.FN = f & ( 1 << 6 );
-  Register.FH = f & ( 1 << 5 );
-  Register.FC = f & ( 1 << 4 );
+__attribute__( ( always_inline ) ) void WriteRegF(uint8_t f){
+  Register->FZ = f & ( 1 << 7 );
+  Register->FN = f & ( 1 << 6 );
+  Register->FH = f & ( 1 << 5 );
+  Register->FC = f & ( 1 << 4 );
 }
 
-inline void WriteRegBC(uint8_t x, uint8_t y) {
-  Register.B = x;
-  Register.C = y;
+__attribute__( ( always_inline ) ) void WriteRegBC(uint8_t x, uint8_t y) {
+  Register->B = x;
+  Register->C = y;
 }
-inline int ReadRegBC(){ return (DwordVal(Register.C, Register.B)); }
+__attribute__( ( always_inline ) ) int ReadRegBC(){ return (DwordVal(Register->C, Register->B)); }
 
-inline void WriteRegDE(uint8_t x, uint8_t y) {
-  Register.D = x;
-  Register.E = y;
+__attribute__( ( always_inline ) ) void WriteRegDE(uint8_t x, uint8_t y) {
+  Register->D = x;
+  Register->E = y;
 }
-inline int ReadRegDE(){ return (DwordVal(Register.E, Register.D)); }
+__attribute__( ( always_inline ) ) int ReadRegDE(){ return (DwordVal(Register->E, Register->D)); }
 
-inline void WriteRegHL(uint8_t x, uint8_t y) {
-  Register.H = x;
-  Register.L = y;
+__attribute__( ( always_inline ) ) void WriteRegHL(uint8_t x, uint8_t y) {
+  Register->H = x;
+  Register->L = y;
 }
-inline int ReadRegHL(){ return (DwordVal(Register.L, Register.H)); }
+__attribute__( ( always_inline ) ) int ReadRegHL(){ return (DwordVal(Register->L, Register->H)); }
 
 
-inline void SetFlagZ(void) { /* F struct: "ZNHC0000" */
-  Register.FZ = 1<<7;// |= bx10000000;
-}
-inline void ResetFlagZ(void) {
-  Register.FZ = 0;// &= bx01111111;
-}
-inline uint8_t GetFlagZ(){ return Register.FZ; } // ((Register.F & bx10000000) >> 7)
+#define SetFlagZ() Register->FZ=1<<7
 
-inline void SetFlagN(void) { /* F struct: "ZNHC0000" */
-  Register.FN = 1<<6;// |= bx01000000;
-}
-inline void ResetFlagN(void) {
-  Register.FN = 0; // &= bx10111111;
-}
-inline uint8_t GetFlagN(){ return Register.FN; } // ((Register.F & bx01000000) >> 6)
+#define ResetFlagZ() Register->FZ=0
 
-inline void SetFlagH(void) { /* F struct: "ZNHC0000" */
-  Register.FH = 1<<5;// |= bx00100000;
-}
-inline void ResetFlagH(void) {
-  Register.FH = 0; // &= bx11011111;
-}
-inline uint8_t GetFlagH(){ return Register.FH; } // ((Register.F & bx00100000) >> 5)
+#define GetFlagZ() Register->FZ
 
-inline void SetFlagC(void) { /* F struct: "ZNHC0000" */
-  Register.FC = 1<<4; // |= bx00010000;
-}
-inline void ResetFlagC(void) {
-  Register.FC = 0;// &= bx11101111;
-}
-inline uint8_t GetFlagC(){ return Register.FC; } // ((Register.F & bx00010000) >> 4)
+#define SetFlagN() Register->FN=1<<6
 
-inline void PushToStack(uint8_t TmpRegister1, uint8_t TmpRegister2) {    /* Push a register pair to the stack */
-  Register.SP -= 1;  /* decrement SP to update the Stack Point address */
-  Register.SPBlock = getMemoryBlock( Register.SP );
-  
-  Register.SPBlock[ Register.SP ] = TmpRegister1;
-  // MemoryWrite(Register.SP, TmpRegister1);        /* Write the byte */
-  
-  Register.SP -= 1;  /* decrement SP to update the Stack Point address */
-  // Register.SPBlock = getMemoryBlock( Register.SP );
-  
-  // MemoryWrite(Register.SP, TmpRegister2);        /* Write the byte */
-  Register.SPBlock[ Register.SP ] = TmpRegister2;
+#define ResetFlagN() Register->FN=0
+
+#define GetFlagN() Register->FN
+
+#define SetFlagH() Register->FH=1<<5
+
+#define ResetFlagH() Register->FH=0
+
+#define GetFlagH() Register->FH
+
+#define SetFlagC() Register->FC=1<<4
+
+#define ResetFlagC() Register->FC=0
+
+#define GetFlagC() Register->FC
+
+__attribute__( ( always_inline ) ) void PushToStack(uint8_t TmpRegister1, uint8_t TmpRegister2) {    /* Push a register pair to the stack */
+  Register->SP -= 1;  /* decrement SP to update the Stack Point address */
+  Register->SPBlock = getMemoryBlock( Register->SP );
+
+  Register->SPBlock[ Register->SP ] = TmpRegister1;
+  // MemoryWrite(Register->SP, TmpRegister1);        /* Write the byte */
+
+  Register->SP -= 1;  /* decrement SP to update the Stack Point address */
+  // Register->SPBlock = getMemoryBlock( Register->SP );
+
+  // MemoryWrite(Register->SP, TmpRegister2);        /* Write the byte */
+  Register->SPBlock[ Register->SP ] = TmpRegister2;
 }
 
-inline void PopFromStack(uint8_t *popreg1, uint8_t *popreg2) {    /* Pop a register pair from the stack */
-  *popreg2 = Register.SPBlock[ Register.SP ]; // MemoryRead(Register.SP);
-  Register.SP++;
-  // Register.SPBlock = getMemoryBlock( Register.SP );
+__attribute__( ( always_inline ) ) void PopFromStack(uint8_t *popreg1, uint8_t *popreg2) {    /* Pop a register pair from the stack */
+  *popreg2 = Register->SPBlock[ Register->SP ]; // MemoryRead(Register->SP);
+  Register->SP++;
+  // Register->SPBlock = getMemoryBlock( Register->SP );
 
-  *popreg1 = Register.SPBlock[ Register.SP ]; // MemoryRead(Register.SP);
-  Register.SP++;
-  Register.SPBlock = getMemoryBlock( Register.SP );
-  // *popreg1 =  MemoryRead(Register.SP);
+  *popreg1 = Register->SPBlock[ Register->SP ]; // MemoryRead(Register->SP);
+  Register->SP++;
+  Register->SPBlock = getMemoryBlock( Register->SP );
+  // *popreg1 =  MemoryRead(Register->SP);
 }
 
-inline void IncReg8(uint8_t *RegToInc) {
+__attribute__( ( always_inline ) ) void IncReg8(uint8_t *RegToInc) {
   ResetFlagN();
+	*RegToInc += 1;
+	if( *RegToInc == 0 ) SetFlagZ(); else ResetFlagZ();
+
+/*
   if (*RegToInc == 255) {
       *RegToInc = 0;
       SetFlagZ();
@@ -122,6 +118,7 @@ inline void IncReg8(uint8_t *RegToInc) {
       *RegToInc += 1;
       ResetFlagZ();
   }
+*/
   if ((*RegToInc & bx00001111) == 0) {
       SetFlagH();
     } else {
@@ -129,21 +126,20 @@ inline void IncReg8(uint8_t *RegToInc) {
   }
 }
 
-inline void DecReg8(uint8_t *RegToInc) { /* Decrements by 1 an 8bit register */
+__attribute__( ( always_inline ) ) void DecReg8(uint8_t *RegToInc) { /* Decrements by 1 an 8bit register */
   uint8_t OldRegToInc;
   OldRegToInc = *RegToInc;
   SetFlagN();
-  if (*RegToInc == 0) {
-      *RegToInc = 255;
-    } else {
-      *RegToInc -= 1;
-  }
+
+	*RegToInc -= 1;
+//	if( *RegToInc == 255 ) SetFlagZ(); else ResetFlagZ(); ????
+
   if ((OldRegToInc & bx00001111) < (*RegToInc & bx00001111)) {
       SetFlagH();
     } else {
       ResetFlagH();
   }
-  if (*RegToInc == 0) {
+  if (*RegToInc == 0) { // ????
       SetFlagZ();
     } else {
       ResetFlagZ();
@@ -151,7 +147,7 @@ inline void DecReg8(uint8_t *RegToInc) { /* Decrements by 1 an 8bit register */
 }
 
 
-inline void IncReg16(uint8_t *x, uint8_t *y) { /* Increment a 16 bit register (pair of 8bit registers) */
+__attribute__( ( always_inline ) ) void IncReg16(uint8_t *x, uint8_t *y) { /* Increment a 16 bit register (pair of 8bit registers) */
   if ((*x == 255) && (*y == 255)) {  /* if Reg = 65535 then Reg = 0 */
       *x = 0;
       *y = 0;
@@ -166,7 +162,7 @@ inline void IncReg16(uint8_t *x, uint8_t *y) { /* Increment a 16 bit register (p
 }
 
 
-inline void DecReg16(uint8_t *x, uint8_t *y) { /* Decrement a 16 bit register (pair of 8bit registers) */
+__attribute__( ( always_inline ) ) void DecReg16(uint8_t *x, uint8_t *y) { /* Decrement a 16 bit register (pair of 8bit registers) */
   if ((*x == 0) && (*y == 0)) {  /* if Reg = 0 then Reg = 65535 */
       *x = 255;
       *y = 255;
@@ -180,7 +176,7 @@ inline void DecReg16(uint8_t *x, uint8_t *y) { /* Decrement a 16 bit register (p
   }
 }
 
-inline void SubValFromReg8(uint8_t *RegToSub, uint8_t *SubValue) {  /* Subtract a n ubyte value from a 8bit register */
+__attribute__( ( always_inline ) ) void SubValFromReg8(uint8_t *RegToSub, uint8_t *SubValue) {  /* Subtract a n ubyte value from a 8bit register */
   SetFlagN();
   if (*RegToSub == *SubValue) {
       SetFlagZ();
@@ -202,19 +198,19 @@ inline void SubValFromReg8(uint8_t *RegToSub, uint8_t *SubValue) {  /* Subtract 
 }
 
 
-inline void AddToA(uint8_t ValToAdd) {  /* Add ValToAdd to register A and sets some flags (8bit arithmetic) */
-    if (((Register.A & bx00001111) + (ValToAdd & bx00001111)) > 15) {
+__attribute__( ( always_inline ) ) void AddToA(uint8_t ValToAdd) {  /* Add ValToAdd to register A and sets some flags (8bit arithmetic) */
+    if (((Register->A & bx00001111) + (ValToAdd & bx00001111)) > 15) {
         SetFlagH();
       } else {
         ResetFlagH();
     }
-    if ((Register.A + ValToAdd) > 255) {
+    if ((Register->A + ValToAdd) > 255) {
         SetFlagC();
       } else {
         ResetFlagC();
     }
-    Register.A = ((Register.A + ValToAdd) & bx11111111);
-    if (Register.A == 0) {
+    Register->A = ((Register->A + ValToAdd) & bx11111111);
+    if (Register->A == 0) {
         SetFlagZ();
       } else {
         ResetFlagZ();
@@ -223,7 +219,7 @@ inline void AddToA(uint8_t ValToAdd) {  /* Add ValToAdd to register A and sets s
 }
 
 
-inline void AddToHL(unsigned int ValToAdd) {  /* Add ValToAdd to register HL and sets some flags (16bit Z80 arithmetic) */
+__attribute__( ( always_inline ) ) void AddToHL(unsigned int ValToAdd) {  /* Add ValToAdd to register HL and sets some flags (16bit Z80 arithmetic) */
     static unsigned int TempHLvalue;
     TempHLvalue = ReadRegHL();
     /* I'm not touching H flag, but really not sure what should I do...
@@ -242,40 +238,40 @@ inline void AddToHL(unsigned int ValToAdd) {  /* Add ValToAdd to register HL and
 }
 
 
-inline void AddToSP(int8_t ByteToAdd) {  /* Add ByteToAdd signed byte to register SP and set some Z80 flags */
+__attribute__( ( always_inline ) ) void AddToSP(int8_t ByteToAdd) {  /* Add ByteToAdd signed byte to register SP and set some Z80 flags */
   static uint16_t ResultAddToSP;
-  ResultAddToSP = (Register.SP + ByteToAdd);
+  ResultAddToSP = (Register->SP + ByteToAdd);
   /* ResultAddToSP &= 0xFFFF; */ /* Make sure to be in the range 0..65535 - not needed if the variable is an unsigned 16bit wide integer */
 
-  if ((ResultAddToSP & 0xFF) < (Register.SP & 0xFF)) {
+  if ((ResultAddToSP & 0xFF) < (Register->SP & 0xFF)) {
       SetFlagC();
     } else {
       ResetFlagC();
   }
-  if ((ResultAddToSP & 0xF) < (Register.SP & 0xF)) {
+  if ((ResultAddToSP & 0xF) < (Register->SP & 0xF)) {
       SetFlagH();
     } else {
       ResetFlagH();
   }
-  Register.SP = ResultAddToSP;
-  Register.SPBlock = getMemoryBlock( ResultAddToSP );
+  Register->SP = ResultAddToSP;
+  Register->SPBlock = getMemoryBlock( ResultAddToSP );
   ResetFlagZ();
   ResetFlagN();
 }
 
 
-inline void CmpA(uint8_t n) {
-  if ((Register.A & 15) < (n & 15)) {
+__attribute__( ( always_inline ) ) void CmpA(uint8_t n) {
+  if ((Register->A & 15) < (n & 15)) {
       SetFlagH();
     } else {
       ResetFlagH();
   }
-  if (Register.A < n) {
+  if (Register->A < n) {
       SetFlagC();
     } else {
       ResetFlagC();
   }
-  if (Register.A == n) {
+  if (Register->A == n) {
       SetFlagZ();
     } else {
       ResetFlagZ();
@@ -284,13 +280,13 @@ inline void CmpA(uint8_t n) {
 }
 
 
-inline void XorA(uint8_t xorvalz) {
+__attribute__( ( always_inline ) ) void XorA(uint8_t xorvalz) {
   /* Xor A with xorvalz, saves results into A, and sets some Z80 flags. */
   ResetFlagN();
   ResetFlagH();
   ResetFlagC();
-  Register.A = (Register.A ^ xorvalz);
-  if (Register.A == 0) {
+  Register->A = (Register->A ^ xorvalz);
+  if (Register->A == 0) {
       SetFlagZ();
     } else {
       ResetFlagZ();
@@ -298,9 +294,9 @@ inline void XorA(uint8_t xorvalz) {
 }
 
 
-inline void AndA(uint8_t ValToAndWith) {
-  Register.A = (Register.A & ValToAndWith);
-  if (Register.A == 0) {
+__attribute__( ( always_inline ) ) void AndA(uint8_t ValToAndWith) {
+  Register->A = (Register->A & ValToAndWith);
+  if (Register->A == 0) {
       SetFlagZ();
     } else {
       ResetFlagZ();
@@ -311,9 +307,9 @@ inline void AndA(uint8_t ValToAndWith) {
 }
 
 
-inline void OrA(uint8_t ValToOrWith) { /* A = A OR ValToOrWith (and sets some Z80 flags) */
-  Register.A = (Register.A | ValToOrWith);
-  if (Register.A == 0) {
+__attribute__( ( always_inline ) ) void OrA(uint8_t ValToOrWith) { /* A = A OR ValToOrWith (and sets some Z80 flags) */
+  Register->A = (Register->A | ValToOrWith);
+  if (Register->A == 0) {
       SetFlagZ();
     } else {
       ResetFlagZ();
@@ -324,7 +320,7 @@ inline void OrA(uint8_t ValToOrWith) { /* A = A OR ValToOrWith (and sets some Z8
 }
 
 
-inline void SwapUbyte(uint8_t *ubytevalue) {
+__attribute__( ( always_inline ) ) void SwapUbyte(uint8_t *ubytevalue) {
   /* Swaps upper & lower nibbles of ubytevalue and sets some Z80 flags */
   *ubytevalue = ((*ubytevalue & bx11110000) >> 4) | ((*ubytevalue & bx00001111) << 4);
   if (*ubytevalue == 0) {
@@ -338,7 +334,7 @@ inline void SwapUbyte(uint8_t *ubytevalue) {
 }
 
 
-inline void TestBit0(uint8_t wartosc) {
+__attribute__( ( always_inline ) ) void TestBit0(uint8_t wartosc) {
   if ((wartosc & bx00000001) == 0) {
       SetFlagZ();
     } else {
@@ -348,7 +344,7 @@ inline void TestBit0(uint8_t wartosc) {
   SetFlagH();
 }
 
-inline void TestBit1(uint8_t wartosc) {
+__attribute__( ( always_inline ) ) void TestBit1(uint8_t wartosc) {
   if ((wartosc & bx00000010) == 0) {
       SetFlagZ();
     } else {
@@ -358,7 +354,7 @@ inline void TestBit1(uint8_t wartosc) {
   SetFlagH();
 }
 
-inline void TestBit2(uint8_t wartosc) {
+__attribute__( ( always_inline ) ) void TestBit2(uint8_t wartosc) {
   if ((wartosc & bx00000100) == 0) {
       SetFlagZ();
     } else {
@@ -368,7 +364,7 @@ inline void TestBit2(uint8_t wartosc) {
   SetFlagH();
 }
 
-inline void TestBit3(uint8_t wartosc) {
+__attribute__( ( always_inline ) ) void TestBit3(uint8_t wartosc) {
   if ((wartosc & bx00001000) == 0) {
       SetFlagZ();
     } else {
@@ -378,7 +374,7 @@ inline void TestBit3(uint8_t wartosc) {
   SetFlagH();
 }
 
-inline void TestBit4(uint8_t wartosc) {
+__attribute__( ( always_inline ) ) void TestBit4(uint8_t wartosc) {
   if ((wartosc & bx00010000) == 0) {
       SetFlagZ();
     } else {
@@ -388,7 +384,7 @@ inline void TestBit4(uint8_t wartosc) {
   SetFlagH();
 }
 
-inline void TestBit5(uint8_t wartosc) {
+__attribute__( ( always_inline ) ) void TestBit5(uint8_t wartosc) {
   if ((wartosc & bx00100000) == 0) {
       SetFlagZ();
     } else {
@@ -398,7 +394,7 @@ inline void TestBit5(uint8_t wartosc) {
   SetFlagH();
 }
 
-inline void TestBit6(uint8_t wartosc) {
+__attribute__( ( always_inline ) ) void TestBit6(uint8_t wartosc) {
   if ((wartosc & bx01000000) == 0) {
       SetFlagZ();
     } else {
@@ -408,7 +404,7 @@ inline void TestBit6(uint8_t wartosc) {
   SetFlagH();
 }
 
-inline void TestBit7(uint8_t wartosc) {
+__attribute__( ( always_inline ) ) void TestBit7(uint8_t wartosc) {
   if ((wartosc & bx10000000) == 0) {
       SetFlagZ();
     } else {
@@ -418,72 +414,72 @@ inline void TestBit7(uint8_t wartosc) {
   SetFlagH();
 }
 
-inline void ResetBit0(uint8_t *wartosc) {  /* Reset bit 0 of wartosc */
+__attribute__( ( always_inline ) ) void ResetBit0(uint8_t *wartosc) {  /* Reset bit 0 of wartosc */
   *wartosc &= bx11111110;
 }
 
-inline void ResetBit1(uint8_t *wartosc) {  /* Reset bit 1 of wartosc */
+__attribute__( ( always_inline ) ) void ResetBit1(uint8_t *wartosc) {  /* Reset bit 1 of wartosc */
   *wartosc &= bx11111101;
 }
 
-inline void ResetBit2(uint8_t *wartosc) {  /* Reset bit 2 of wartosc */
+__attribute__( ( always_inline ) ) void ResetBit2(uint8_t *wartosc) {  /* Reset bit 2 of wartosc */
   *wartosc &= bx11111011;
 }
 
-inline void ResetBit3(uint8_t *wartosc) {  /* Reset bit 3 of wartosc */
+__attribute__( ( always_inline ) ) void ResetBit3(uint8_t *wartosc) {  /* Reset bit 3 of wartosc */
   *wartosc &= bx11110111;
 }
 
-inline void ResetBit4(uint8_t *wartosc) {  /* Reset bit 4 of wartosc */
+__attribute__( ( always_inline ) ) void ResetBit4(uint8_t *wartosc) {  /* Reset bit 4 of wartosc */
   *wartosc &= bx11101111;
 }
 
-inline void ResetBit5(uint8_t *wartosc) {  /* Reset bit 5 of wartosc */
+__attribute__( ( always_inline ) ) void ResetBit5(uint8_t *wartosc) {  /* Reset bit 5 of wartosc */
   *wartosc &= bx11011111;
 }
 
-inline void ResetBit6(uint8_t *wartosc) {  /* Reset bit 6 of wartosc */
+__attribute__( ( always_inline ) ) void ResetBit6(uint8_t *wartosc) {  /* Reset bit 6 of wartosc */
   *wartosc &= bx10111111;
 }
 
-inline void ResetBit7(uint8_t *wartosc) {  /* Reset bit 7 of wartosc */
+__attribute__( ( always_inline ) ) void ResetBit7(uint8_t *wartosc) {  /* Reset bit 7 of wartosc */
   *wartosc &= bx01111111;
 }
 
-inline void SetBit0(uint8_t *wartosc) {  /* Set bit 0 of wartosc */
+__attribute__( ( always_inline ) ) void SetBit0(uint8_t *wartosc) {  /* Set bit 0 of wartosc */
   *wartosc |= bx00000001;
 }
 
-inline void SetBit1(uint8_t *wartosc) {  /* Set bit 1 of wartosc */
+__attribute__( ( always_inline ) ) void SetBit1(uint8_t *wartosc) {  /* Set bit 1 of wartosc */
   *wartosc |= bx00000010;
 }
 
-inline void SetBit2(uint8_t *wartosc) {  /* Set bit 2 of wartosc */
+__attribute__( ( always_inline ) ) void SetBit2(uint8_t *wartosc) {  /* Set bit 2 of wartosc */
   *wartosc |= bx00000100;
 }
 
-inline void SetBit3(uint8_t *wartosc) {  /* Set bit 3 of wartosc */
+__attribute__( ( always_inline ) ) void SetBit3(uint8_t *wartosc) {  /* Set bit 3 of wartosc */
   *wartosc |= bx00001000;
 }
 
-inline void SetBit4(uint8_t *wartosc) {  /* Set bit 4 of wartosc */
+__attribute__( ( always_inline ) ) void SetBit4(uint8_t *wartosc) {  /* Set bit 4 of wartosc */
   *wartosc |= bx00010000;
 }
 
-inline void SetBit5(uint8_t *wartosc) {  /* Set bit 5 of wartosc */
+__attribute__( ( always_inline ) ) void SetBit5(uint8_t *wartosc) {  /* Set bit 5 of wartosc */
   *wartosc |= bx00100000;
 }
 
-inline void SetBit6(uint8_t *wartosc) {  /* Set bit 6 of wartosc */
+__attribute__( ( always_inline ) ) void SetBit6(uint8_t *wartosc) {  /* Set bit 6 of wartosc */
   *wartosc |= bx01000000;
 }
 
-inline void SetBit7(uint8_t *wartosc) {  /* Set bit 7 of wartosc */
+__attribute__( ( always_inline ) ) void SetBit7(uint8_t *wartosc) {  /* Set bit 7 of wartosc */
   *wartosc |= bx10000000;
 }
 
 
-inline void ShiftRightSRL(uint8_t *n) {
+__attribute__( ( always_inline ) ) void ShiftRightSRL(uint8_t *n) {
   /* Shift n right into Carry (MSB set to 0), and set some flags. */
   if ((*n & bx00000001) == 0) {
       ResetFlagC();  /* C contains old bit 0 */
@@ -502,7 +498,7 @@ inline void ShiftRightSRL(uint8_t *n) {
 }
 
 
-inline void RotateLeftCarry(uint8_t *NumRotate) {
+__attribute__( ( always_inline ) ) void RotateLeftCarry(uint8_t *NumRotate) {
   /* Rotates NumRotate by 1 to the left through carry flag, and sets some Z80 flags.
      This function is used both by RLA AND RL r instructions. */
   static uint8_t TempUbyteRLC;
@@ -526,7 +522,7 @@ inline void RotateLeftCarry(uint8_t *NumRotate) {
 }
 
 
-inline void RotateRightCarry(uint8_t *NumRotate) {
+__attribute__( ( always_inline ) ) void RotateRightCarry(uint8_t *NumRotate) {
   /* Rotates NumRotate by 1 to the right through carry flag, and sets some Z80 flags.
      This function is used both by RRA and RR n instructions. */
   static uint8_t TempUbyte;
@@ -549,26 +545,26 @@ inline void RotateRightCarry(uint8_t *NumRotate) {
 }
 
 
-inline void SbcA(uint8_t ValToSub) {
+__attribute__( ( always_inline ) ) void SbcA(uint8_t ValToSub) {
   /* Subtract content of ValToSub along with the Carry flag from A, and sets some Z80 flags */
   /*static uint8_t UbyteBuff, FlagC; */
   static signed int IntBuff, FlagC;
   if (GetFlagC() != 0) FlagC = 1; else FlagC = 0; /* UbyteBuff--; */
-  IntBuff = Register.A - (ValToSub + FlagC);
+  IntBuff = Register->A - (ValToSub + FlagC);
   if (IntBuff < 0) {
       SetFlagC();
       IntBuff += 256;
     } else {
       ResetFlagC();
   }
-  if (((Register.A & bx00001111) - (ValToSub & bx00001111) - FlagC) < 0) {
+  if (((Register->A & bx00001111) - (ValToSub & bx00001111) - FlagC) < 0) {
       SetFlagH();
     } else {
       ResetFlagH();
   }
-  Register.A = IntBuff;
+  Register->A = IntBuff;
   SetFlagN();
-  if (Register.A == 0) {
+  if (Register->A == 0) {
       SetFlagZ();
     } else {
       ResetFlagZ();
@@ -576,7 +572,7 @@ inline void SbcA(uint8_t ValToSub) {
 }
 
 
-inline void AdcA(uint8_t ValToAdd) {
+__attribute__( ( always_inline ) ) void AdcA(uint8_t ValToAdd) {
   /* Add content of ValToAdd along with Carry flag to A, and sets some Z80 flags */
   static int UbyteBuff, FlagC;
   if (GetFlagC() == 0) {
@@ -584,29 +580,29 @@ inline void AdcA(uint8_t ValToAdd) {
     } else {
       FlagC = 1;
   }
-  UbyteBuff = (Register.A + ValToAdd + FlagC);
+  UbyteBuff = (Register->A + ValToAdd + FlagC);
   ResetFlagN();
-  /*if ((Register.A + ValToAdd + FlagC) > 255) { */
+  /*if ((Register->A + ValToAdd + FlagC) > 255) { */
   if (UbyteBuff > 255) {  /* Set flag C if carry from bit 7 */
       SetFlagC();
     } else {
       ResetFlagC();
   }
-  if (((Register.A & bx00001111) + (ValToAdd & bx00001111) + FlagC) > 15) {  /* Set if carry from bit 3 */
-  /*if ((UbyteBuff & 8) < (Register.A & 8)) { */
+  if (((Register->A & bx00001111) + (ValToAdd & bx00001111) + FlagC) > 15) {  /* Set if carry from bit 3 */
+  /*if ((UbyteBuff & 8) < (Register->A & 8)) { */
       SetFlagH();
     } else {
       ResetFlagH();
   }
-  Register.A = (UbyteBuff & 0xFF);
-  if (Register.A == 0) {
+  Register->A = (UbyteBuff & 0xFF);
+  if (Register->A == 0) {
       SetFlagZ();
     } else {
       ResetFlagZ();
   }
 }
 
-inline void ShiftSLA(uint8_t *ValueToShift) {
+__attribute__( ( always_inline ) ) void ShiftSLA(uint8_t *ValueToShift) {
   /* Shift ValueToShift left by 1 bit, putting old bit 7 into Carry flag. */
   if ((*ValueToShift & bx10000000) == 0) {
       ResetFlagC();
@@ -625,7 +621,7 @@ inline void ShiftSLA(uint8_t *ValueToShift) {
 }
 
 
-inline void ShiftSRA(uint8_t *ValueToShift) {
+__attribute__( ( always_inline ) ) void ShiftSRA(uint8_t *ValueToShift) {
   /* Shift ValueToShift right by 1 bit, putting old bit 0 into Carry flag. MSB doesn't change. */
   if ((*ValueToShift & bx00000001) == 0) {
       ResetFlagC();
@@ -648,51 +644,51 @@ inline void ShiftSRA(uint8_t *ValueToShift) {
 }
 
 
-inline void RRCA(void) {
+__attribute__( ( always_inline ) ) void RRCA(void) {
   /* Rotates A by 1 to the right, and sets some Z80 flags. */
   static uint8_t TempUbyte;
-  TempUbyte = (Register.A & bx00000001); /* Save old bit 7 */
-  Register.A >>= 1;   /* shift right by 1 */
+  TempUbyte = (Register->A & bx00000001); /* Save old bit 7 */
+  Register->A >>= 1;   /* shift right by 1 */
   if (TempUbyte == 0) {  /* if old bit 7 was 0 */
       ResetFlagC();  /* Reset carry flag */
-      Register.A &= bx01111111;  /* restore old bit 7 into bit 0 */
+      Register->A &= bx01111111;  /* restore old bit 7 into bit 0 */
     } else {  /* if old bit 7 was 1 */
       SetFlagC();    /* Set carry flag */
-      Register.A |= bx10000000;  /* restore old bit 7 into bit 0 */
+      Register->A |= bx10000000;  /* restore old bit 7 into bit 0 */
   }
   /* I *do* touch the Z flag. The Z80 manual tells to not touch it (while the Gameboy
      CPU manual tells that it should be reset if result is 0...)
      I decided to do the same than the NO$GMB emulator: I always reset Z. */
-  /*IF Register.A = 0 THEN SetFlagZ() ELSE ResetFlagZ() */   /* Set or reset the Z flag */
+  /*IF Register->A = 0 THEN SetFlagZ() ELSE ResetFlagZ() */   /* Set or reset the Z flag */
   ResetFlagZ();
   ResetFlagN();
   ResetFlagH();    /* Flags N & H should be reseted */
 }
 
 
-inline void RLCA(void) {
+__attribute__( ( always_inline ) ) void RLCA(void) {
   /* Rotates register A by 1 to the left, and sets some Z80 flags. */
   static uint8_t TempUbyte;
-  TempUbyte = (Register.A & bx10000000); /* Save old bit 7 */
-  Register.A <<= 1;   /* shift left by 1 */
+  TempUbyte = (Register->A & bx10000000); /* Save old bit 7 */
+  Register->A <<= 1;   /* shift left by 1 */
   if (TempUbyte == 0) {
       ResetFlagC();  /* Reset carry flag */
-      Register.A &= bx11111110;  /* restore old bit 7 into bit 0 */
+      Register->A &= bx11111110;  /* restore old bit 7 into bit 0 */
     } else {
       SetFlagC();    /* Set carry flag */
-      Register.A |= bx00000001;  /* restore old bit 7 into bit 0 */
+      Register->A |= bx00000001;  /* restore old bit 7 into bit 0 */
   }
   /* I *do* touch the Z flag. The Z80 manual tells to not touch it (while the Gameboy
      CPU manual tells that it should be reset if result is 0...)
      I decided to do the same than the NO$GMB emulator: I always reset Z. */
-  /*IF Register.A = 0 THEN SetFlagZ() ELSE ResetFlagZ()  */  /* Set or reset the Z flag */
+  /*IF Register->A = 0 THEN SetFlagZ() ELSE ResetFlagZ()  */  /* Set or reset the Z flag */
   ResetFlagZ();
   ResetFlagN();  /* Flags N & H should be reseted */
   ResetFlagH();
 }
 
 
-inline void RotateRLC(uint8_t *valtorot) {
+__attribute__( ( always_inline ) ) void RotateRLC(uint8_t *valtorot) {
   /* The contents of register r are rotated left 1-bit position.
      The content of bit 7 is copied to the Carry flag and also to bit 0. */
   if ((*valtorot & bx10000000) == 0) {   /* save bit7 into flag C */
@@ -717,7 +713,7 @@ inline void RotateRLC(uint8_t *valtorot) {
 }
 
 
-inline void RotateRRC(uint8_t *valtorot) {
+__attribute__( ( always_inline ) ) void RotateRRC(uint8_t *valtorot) {
   /* The contents of register r are rotated right 1-bit position.
      The content of bit 0 is copied to the Carry flag and also to bit 7. */
   if ((*valtorot & bx00000001) == 0) {   /* save bit0 into flag C */
@@ -742,8 +738,8 @@ inline void RotateRRC(uint8_t *valtorot) {
 }
 
 
-static inline void AdjustDAA(void) { /* Decimal adjust on register A, and sets some Z80 flags */
-  int tempA = Register.A;
+/*static*/ __attribute__( ( always_inline ) ) void AdjustDAA(void) { /* Decimal adjust on register A, and sets some Z80 flags */
+  int tempA = Register->A;
   if (GetFlagN() == 0) {
       if ((GetFlagH() != 0) || ((tempA & 0xF) > 9)) tempA += 0x06;
       if ((GetFlagC() != 0) || (tempA > 0x9F)) tempA += 0x60;
@@ -755,5 +751,5 @@ static inline void AdjustDAA(void) { /* Decimal adjust on register A, and sets s
   if ((tempA & 0x100) == 0x100) SetFlagC();
   tempA &= 0xFF;
   if (tempA == 0) SetFlagZ(); else ResetFlagZ();
-  Register.A = tempA;
+  Register->A = tempA;
 }
