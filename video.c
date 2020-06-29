@@ -884,22 +884,31 @@ static inline void VideoSysUpdate(int cycles, struct zboyparamstype *zboyparams)
             if ((IoRegisters[0xFF40] & bx10000000) > 0) {   /* If LCD is ON... */
               if (LastLYdraw != CurLY) {                    /* And curline hasn't been drawn yet... */
 
-    if( !frameskip ){
-      DrawBackground(CurLY);                      /* Generate current scanline */
-      DrawWindow(CurLY);
-      DrawSprites(CurLY);
+                if( !frameskip ){
+                  if( scaling ){
+                    if( CurLY>2 && CurLY < 155 ){
+                      DrawBackground(CurLY);                      /* Generate current scanline */
+                      DrawWindow(CurLY);
+                      DrawSprites(CurLY);
 
-      if( LastLYdraw != CurLY -1 )
-        SetScanline(CurLY);
+                      if( LastLYdraw != CurLY -1 )
+                        SetScanline(CurLY);
 
-      if( !scaling ){
-  		  FlushScanline();
-      } else if( CurLY>2 && CurLY < 155 ){
-        FlushScanline_scale();
-        if( !(CurLY&3) )
-  		    FlushScanline_scale();
-      }
-    }
+                      FlushScanline_scale();
+                      if( !(CurLY&3) )
+                        FlushScanline_scale();
+                    }
+                  } else {
+                    DrawBackground(CurLY);                      /* Generate current scanline */
+                    DrawWindow(CurLY);
+                    DrawSprites(CurLY);
+
+                    if( LastLYdraw != CurLY -1 )
+                      SetScanline(CurLY);
+
+                    FlushScanline();
+                  }
+                }
 
                 LastLYdraw = CurLY;
 
