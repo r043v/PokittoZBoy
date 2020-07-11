@@ -99,22 +99,12 @@ u_int8_t spriteColorTable[2][4] = { { 0,0,0,0 }, { 0,0,0,0 } }, spriteCurrentPal
 
 uint8_t tileTempBuffer[64];
 
-/*FORCE_INLINE*/ void DrawBackground( void ){// uint32_t CurScanline ) {
-  unsigned int TilesDataAddr, BgTilesMapAddr, TileNum, TileToDisplay, TileTempAddress, LastDisplayedTile;
-  uint8_t x, y, z, t, u, PixelX;// UbyteBuff1, UbyteBuff2;
-
-  u_int8_t * TileBuffer = tileTempBuffer;
+/*FORCE_INLINE*/ void DrawBackground( void ){
+  unsigned int TilesDataAddr, BgTilesMapAddr, LastDisplayedTile = 0xffffffff;
+  uint8_t y, z, u;
 
   //u_int8_t * bgColorTable = (u_int8_t*)&palColorTable[ IoRegisters[ pal_BGP ] ];
-/*
-  if( bgCurrentPal != IoRegisters[pal_BGP] ){
-    bgCurrentPal = IoRegisters[pal_BGP];
-    bgColorTable[0] = bgCurrentPal & 3;
-    bgColorTable[1] = (bgCurrentPal >> 4) & 3;
-    bgColorTable[2] = (bgCurrentPal >> 2) & 3;
-    bgColorTable[3] = (bgCurrentPal >> 6) & 3;
-  }
-*/
+
   TilesDataAddr  = lcdControlRegister & 16 ? 0x8000 : 0x8800;
   BgTilesMapAddr = lcdControlRegister &  8 ? 0x9C00 : 0x9800;
 
@@ -123,9 +113,7 @@ uint8_t tileTempBuffer[64];
   u = (z << 3); /* tile line offset */
   y >>= 3;  /* map offset y */
 
-  /*FOR y = 0 TO 31 */
-  LastDisplayedTile = 999; /* a valid tile number is 0..255 - I am forcing the 1st tile to get generated */
-  TileNum = (IoRegisters[0xFF43] >> 3);  /* 0xFF43 is the SCX register */
+  u_int8_t TileNum = (IoRegisters[0xFF43] >> 3);  /* 0xFF43 is the SCX register */
 
 	BgTilesMapAddr += (y << 5);
 
@@ -134,20 +122,19 @@ uint8_t tileTempBuffer[64];
   u_int8_t *tilePtr = &VideoRAM[ BgTilesMapAddr + TileNum ], *lastTile = &tilePtr[ 32 - TileNum ];
   u_int8_t *tileDataPtr = &VideoRAM[ TilesDataAddr + ( z << 1 ) ]; // add line offset
 
-  //t = z << 3;
+  u_int8_t * tileBfPtrOffset = tileTempBuffer + u;
 
   while( 1 ){
-    TileToDisplay = TilesDataAddr == 0x8000 ? *tilePtr : UbyteToByte( *tilePtr ) + 128 ;
+    u_int8_t TileToDisplay = TilesDataAddr == 0x8000 ? *tilePtr : UbyteToByte( *tilePtr ) + 128 ;
 
     if( ++tilePtr == lastTile ) tilePtr -= 32;
 
-    if( TileToDisplay != LastDisplayedTile ){ /* Compute the tile only if it's different than the previous one (otherwise just */
-      LastDisplayedTile = TileToDisplay;      /* reuse the same data) - I named this a "micro tile cache" in the changelog. */
+    u_int8_t * tileBfPtr = tileBfPtrOffset ;
 
-      //t = (z << 1);    /* tile line index */
+    if( TileToDisplay != LastDisplayedTile ){
+      LastDisplayedTile = TileToDisplay;
+
       u_int8_t * tileDataTempPtr = tileDataPtr + ( TileToDisplay << 4 );
-      //t <<= 2; /* tile line data index */
-      u_int8_t * tileBfPtr = &TileBuffer[ u ];
 
       register u_int32_t
         b1 = (*tileDataTempPtr++)<<1,
@@ -188,15 +175,13 @@ uint8_t tileTempBuffer[64];
       | ( b2 & bx00000010 ) ) >> 1
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      *tileBfPtr = bgColorTable[
         ( b1 & bx00000010 )
       | ( b2 & bx00000001 )
       ];
+
+      tileBfPtr -= 7;
     }
-
-	  //t = u;
-
-    u_int8_t * tileBfPtr = &TileBuffer[ u ];
 
     // crop right
     if( frameBfPtr > &framebuffer[ 151 ] ){
@@ -208,34 +193,16 @@ uint8_t tileTempBuffer[64];
 
     // crop left
     if( frameBfPtr < framebuffer ){
-      while( frameBfPtr != framebuffer ){
-        *frameBfPtr++;
-        *tileBfPtr++;
-      };
+      register u_int8_t n = framebuffer - frameBfPtr;
+      frameBfPtr += n; tileBfPtr += n;
+/*      do {
+        *frameBfPtr++; *tileBfPtr++;
+      } while( frameBfPtr != framebuffer );*/
     }
 
     while( frameBfPtr != frameBfPtrEnd ) *frameBfPtr++ = *tileBfPtr++;
-
-	  //u = t;
   }
 }
-
-/*
-
-void getTile(void){
-  u_int8_t B1, B2;
-  register u_int32_t b1=B1<<1, b2=B2;
-  register u_int8_t r;
-
-  r = ( ( b1 & bx00010000 ) | ( b2 & bx00001000 ) ) >> 3;
-
-  r = ( b1 & bx00000010 ) | ( b2 & bx00000001 );
-  b1 >>= 1; b2 >>= 1;
-
-  r = ( ( b1 & bx00010000 ) | ( b2 & bx00001000 ) ) >> 3;
-}
-
-*/
 
 /*FORCE_INLINE*/ void DrawWindow(void){//} uint32_t CurScanline ) {
   /*
