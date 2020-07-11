@@ -257,6 +257,10 @@ void blit( int x, int y, int w, int h, const uint8_t *p ){
 }
 //#endif
 */
+
+#define screenFullScreen Pokitto::setWindow( 0, 10, 176, 199+10 )
+#define screenGbCenter Pokitto::setWindow( 16, 30, 144+15, 159+30 )
+
 extern "C" void screenInit( void ){
   SET_MASK_P2;
   write_command_16(0x03);
@@ -264,7 +268,7 @@ extern "C" void screenInit( void ){
 
   Pokitto::lcdClear();
 
-  scaling ? Pokitto::setWindow( 0, 10, 176, 199+10 ) : Pokitto::setWindow( 16, 30, 144+15, 159+30 );
+  scaling ? screenFullScreen : screenGbCenter;
 
   write_command_16(0x22);
   CLR_CS_SET_CD_RD_WR;

@@ -267,4 +267,5 @@
   #define bx11111101 253
   #define bx11111110 254
   #define bx11111111 255
+  #define bx100000000 256
 #endif

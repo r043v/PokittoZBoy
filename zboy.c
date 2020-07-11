@@ -116,10 +116,14 @@ static int isjoystickneeded(struct zboyparamstype *p) {
   return(res);
 }
 
+void computePalColorTable(void);
+
 int zboymain(int argc, char **argv) {
   struct zboyparamstype zboyparams;
   int UsedCycles;
   RomInfos.MemoryROM_PTR = embedrom;
+
+  //computePalColorTable();
 
   /* preload a default zBoy configuration */
   zboy_loaddefaultconfig(&zboyparams);

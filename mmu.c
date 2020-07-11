@@ -6,6 +6,8 @@
    ----------------------------------------
 */
 
+#define FORCE_INLINE __attribute__((always_inline)) inline
+
 enum mbc1_models {
   MBC1_16_8 = 1,
   MBC1_4_32 = 2
@@ -103,7 +105,7 @@ void NULLWrite( uint32_t addr, uint8_t data, uint8_t *bank ){}
 
 extern uint8_t mapper;
 
-__attribute__( ( always_inline ) ) void MemoryWrite(uint32_t WriteAddr, uint8_t DataHolder) {
+FORCE_INLINE void MemoryWrite(uint32_t WriteAddr, uint8_t DataHolder) {
 
   int id = ramidx[ WriteAddr >> 5 ];
 
@@ -151,7 +153,7 @@ uint8_t JoyRegA = 0, JoyRegB = 0, JoyOldReg;
 
 //uint8_t MemoryRead( int );
 
-inline void IOWrite(uint32_t WriteAddr, uint8_t DataHolder, uint8_t *IoRegisters){
+FORCE_INLINE void IOWrite(uint32_t WriteAddr, uint8_t DataHolder, uint8_t *IoRegisters){
 
   if (WriteAddr == 0xFF41) {                            /* STAT register: Do not allow to write into 2 last bits of the STAT */
     IoRegisters[0xFF41] = ((IoRegisters[0xFF41] & bx00000011) | (DataHolder & bx11111100)); /* register, as these bits are the mode flag. */
