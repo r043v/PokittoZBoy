@@ -101,7 +101,7 @@ uint8_t tileTempBuffer[64];
 
 /*FORCE_INLINE*/ void DrawBackground( void ){
   unsigned int TilesDataAddr, BgTilesMapAddr, LastDisplayedTile = 0xffffffff;
-  uint8_t y, z, u;
+  uint8_t y, z ;
 
   //u_int8_t * bgColorTable = (u_int8_t*)&palColorTable[ IoRegisters[ pal_BGP ] ];
 
@@ -109,20 +109,20 @@ uint8_t tileTempBuffer[64];
   BgTilesMapAddr = lcdControlRegister &  8 ? 0x9C00 : 0x9800;
 
   y = CurLY + IoRegisters[0xFF42]; // scanline + scroll y
-  z = (y & 7);   /* tile row index */
-  u = (z << 3); /* tile line offset */
-  y >>= 3;  /* map offset y */
+  z = y & 7;   /* tile row index */
+  u_int8_t * tileBfPtrOffset = tileTempBuffer + ( z << 3 ) ; // + u;
+  //u = (z << 3); /* tile line offset */
+  //y >>= 3;  /* map offset y */
 
   u_int8_t TileNum = (IoRegisters[0xFF43] >> 3);  /* 0xFF43 is the SCX register */
 
-	BgTilesMapAddr += (y << 5);
+	BgTilesMapAddr += ( y >> 3 ) << 5 ;
 
   register u_int8_t * frameBfPtr = framebuffer - ( IoRegisters[0xFF43] & 7 ) ; // - scrolling % 8
 
   u_int8_t *tilePtr = &VideoRAM[ BgTilesMapAddr + TileNum ], *lastTile = &tilePtr[ 32 - TileNum ];
   u_int8_t *tileDataPtr = &VideoRAM[ TilesDataAddr + ( z << 1 ) ]; // add line offset
 
-  u_int8_t * tileBfPtrOffset = tileTempBuffer + u;
 
   while( 1 ){
     u_int8_t TileToDisplay = TilesDataAddr == 0x8000 ? *tilePtr : UbyteToByte( *tilePtr ) + 128 ;
