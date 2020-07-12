@@ -75,7 +75,7 @@ void flipPalette( void ){
 #define setPixel(x,y,c) framebuffer[x]=(c)
 #define getPixel(x,y) framebuffer[x]
 
-u_int8_t bgColorTable[4] = { 0,0,0,0 }, bgCurrentPal = 0;
+u_int8_t bgColorTable[4] = { 0,0,0,0 }, wdColorTable[4] = { 0,0,0,0 }, bgCurrentPal = 0;
 u_int8_t spriteColorTable[2][4] = { { 0,0,0,0 }, { 0,0,0,0 } }, spriteCurrentPal[2] = { 0, 0 };
 
 uint8_t tileTempBuffer[8];//[64];
@@ -216,42 +216,42 @@ uint8_t tileTempBuffer[8];//[64];
       register u_int32_t b1 = ( *tileDataTempPtr++ ) << 1 ;
       register u_int32_t b2 = *tileDataTempPtr ;
 
-      *tileBfPtr++ = bgColorTable[
+      *tileBfPtr++ = wdColorTable[
       ( ( b1 & bx100000000 )
       | ( b2 &  bx10000000 ) ) >> 7
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      *tileBfPtr++ = wdColorTable[
       ( ( b1 & bx10000000 )
       | ( b2 & bx01000000 ) ) >> 6
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      *tileBfPtr++ = wdColorTable[
       ( ( b1 & bx01000000 )
       | ( b2 & bx00100000 ) ) >> 5
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      *tileBfPtr++ = wdColorTable[
       ( ( b1 & bx00100000 )
       | ( b2 & bx00010000 ) ) >> 4
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      *tileBfPtr++ = wdColorTable[
       ( ( b1 & bx00010000 )
       | ( b2 & bx00001000 ) ) >> 3
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      *tileBfPtr++ = wdColorTable[
       ( ( b1 & bx00001000 )
       | ( b2 & bx00000100 ) ) >> 2
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      *tileBfPtr++ = wdColorTable[
       ( ( b1 & bx00000100 )
       | ( b2 & bx00000010 ) ) >> 1
       ];
 
-      *tileBfPtr = bgColorTable[
+      *tileBfPtr = wdColorTable[
         ( b1 & bx00000010 )
       | ( b2 & bx00000001 )
       ];
@@ -435,8 +435,8 @@ void DrawSprites( void ){// int32_t CurScanline ) {
           // Now apply the sprite onscreen...
 
           u_int8_t *spritePal = spriteColorTable[ SpritePalette ],
-          *spriteCurrentPalette = &spriteCurrentPal[SpritePalette];
-          u_int8_t *spritePalIndex = &IoRegisters[SpritePalette + pal_OBP0];// ? pal_OBP1 : pal_OBP0;
+          *spriteCurrentPalette = &spriteCurrentPal[ SpritePalette ];
+          u_int8_t *spritePalIndex = &IoRegisters[ SpritePalette + pal_OBP0 ];// ? pal_OBP1 : pal_OBP0;
           if( *spriteCurrentPalette != *spritePalIndex ){
             u_int8_t colorMore[2] = { 4, 8 }, more = colorMore[SpritePalette];
             *spriteCurrentPalette = *spritePalIndex;
@@ -745,10 +745,15 @@ uint32_t frameCount;
     // recompute bg pal if need
     if( bgCurrentPal != IoRegisters[pal_BGP] ){
       bgCurrentPal = IoRegisters[pal_BGP];
-      bgColorTable[0] = bgCurrentPal & 3;
-      bgColorTable[1] = (bgCurrentPal >> 4) & 3;
-      bgColorTable[2] = (bgCurrentPal >> 2) & 3;
-      bgColorTable[3] = (bgCurrentPal >> 6) & 3;
+      register u_int8_t * bg = bgColorTable;
+      *bg = bgCurrentPal & 3;
+      wdColorTable[0] = (*bg++) + 12;
+      *bg = (bgCurrentPal >> 4) & 3;
+      wdColorTable[1] = (*bg++) + 12;
+      *bg = (bgCurrentPal >> 2) & 3;
+      wdColorTable[2] = (*bg++) + 12;
+      *bg = (bgCurrentPal >> 6) & 3;
+      wdColorTable[3] = ( *bg ) + 12;
     }
 
       if( scaling ){
