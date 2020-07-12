@@ -78,7 +78,7 @@ void flipPalette( void ){
 u_int8_t bgColorTable[4] = { 0,0,0,0 }, bgCurrentPal = 0;
 u_int8_t spriteColorTable[2][4] = { { 0,0,0,0 }, { 0,0,0,0 } }, spriteCurrentPal[2] = { 0, 0 };
 
-uint8_t tileTempBuffer[64];
+uint8_t tileTempBuffer[8];//[64];
 
 /*FORCE_INLINE*/ void DrawBackground( void ){
   u_int32_t TilesDataAddr, BgTilesMapAddr, LastDisplayedTile = 0xffffffff;
@@ -89,8 +89,8 @@ uint8_t tileTempBuffer[64];
   TilesDataAddr = lcdControlRegister & 16 ? 0x8000 : 0x8800;
 
   y = CurLY + IoRegisters[ 0xFF42 ]; // scanline + scroll y
-  z = ( y & 7 ) << 1 ; // tile offset ( 2B tile )
-  u_int8_t * tileBfPtrOffset = tileTempBuffer + ( z << 2 ) ; // out tile offset ( 2B -> 8B tile )
+//  z = ( y & 7 ) << 1 ; // tile offset ( 2B tile )
+  u_int8_t * tileBfPtrOffset = tileTempBuffer;// + ( z << 2 ) ; // out tile line offset ( 2B -> 8B tile )
 
   u_int8_t TileNum = IoRegisters[0xFF43] >> 3;  /* 0xFF43 is the SCX register */
 
@@ -99,7 +99,7 @@ uint8_t tileTempBuffer[64];
   register u_int8_t * frameBfPtr = framebuffer - ( IoRegisters[0xFF43] & 7 ) ; // - scrolling % 8
 
   u_int8_t *tilePtr = &VideoRAM[ BgTilesMapAddr + TileNum ], *lastTile = &tilePtr[ 32 - TileNum ];
-  u_int8_t *tileDataPtr = &VideoRAM[ TilesDataAddr + z ]; // add line offset
+  u_int8_t *tileDataPtr = &VideoRAM[ TilesDataAddr + /*z*/ ( ( y & 7 ) << 1 ) ]; // add line offset
 
   while( 1 ){
     u_int8_t TileToDisplay = TilesDataAddr == 0x8000 ? *tilePtr : UbyteToByte( *tilePtr ) + 128 ;
@@ -192,15 +192,15 @@ uint8_t tileTempBuffer[64];
 
   u_int8_t pixrow = CurLY - IoRegisters[ 0xFF4A ] ; // window line to draw
   u_int8_t TileNum = ( pixrow >> 3 ) << 5 ; /* tile data index */
-  u_int8_t z = ( pixrow & bx00000111 ) << 1; // offset y in gb tile (2B)
+//  u_int8_t z = ( pixrow & bx00000111 ) << 1; // offset y in gb tile (2B)
 
   u_int32_t TilesMapAddr = ( lcdControlRegister & 64 ? 0x9C00 : 0x9800 ) ;
 
-  u_int8_t * tileBfPtrOffset = tileTempBuffer + ( z << 2 ) ; // out tile offset ( 2B -> 8B tile )
+  u_int8_t * tileBfPtrOffset = tileTempBuffer;// + ( z << 2 ) ; // out tile line offset ( 2B -> 8B tile )
 
   register u_int8_t * frameBfPtr = &framebuffer[ IoRegisters[ 0xFF4B ] - 7 ];
   u_int8_t *tilePtr = &VideoRAM[ TilesMapAddr + TileNum ] ;
-  u_int8_t *tileDataPtr = &VideoRAM[ TilesDataAddr + z ];
+  u_int8_t *tileDataPtr = &VideoRAM[ TilesDataAddr + /*z*/ ( ( pixrow & bx00000111 ) << 1 ) ];
 
   while(1){
     u_int8_t TileToDisplay = TilesDataAddr == 0x8000 ? *tilePtr : UbyteToByte( *tilePtr ) + 128 ;
