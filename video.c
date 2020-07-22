@@ -9,7 +9,8 @@
 #define FORCE_INLINE __attribute__((always_inline)) inline
 
 unsigned int VideoClkCounterMode, VideoClkCounterVBlank;
-uint8_t CurLY, LastLYdraw;   /* used by VideoSysUpdate */
+uint8_t CurLY, LastLYdraw ;
+u_int8_t bgDrawLimitX ; // if bg is partially draw (covered by window)
 
 #define lcdControlRegister (IoRegisters[0xFF40])
 
@@ -98,6 +99,8 @@ uint8_t tileTempBuffer[8];//[64];
 
   register u_int8_t * frameBfPtr = framebuffer - ( IoRegisters[0xFF43] & 7 ) ; // - scrolling % 8
 
+  u_int8_t *drawLimitX = framebuffer + bgDrawLimitX, *maxFullLine = drawLimitX - 8;
+
   u_int8_t *tilePtr = &VideoRAM[ BgTilesMapAddr + TileNum ], *lastTile = &tilePtr[ 32 - TileNum ];
   u_int8_t *tileDataPtr = &VideoRAM[ TilesDataAddr + /*z*/ ( ( y & 7 ) << 1 ) ]; // add line offset
 
@@ -161,8 +164,8 @@ uint8_t tileTempBuffer[8];//[64];
     }
 
     // crop right
-    if( frameBfPtr > &framebuffer[ 151 ] ){
-      while( frameBfPtr != &framebuffer[160] ) *frameBfPtr++ = *tileBfPtr++;
+    if( frameBfPtr > maxFullLine ){
+      while( frameBfPtr != drawLimitX ) *frameBfPtr++ = *tileBfPtr++;
       return;
     }
 
@@ -179,12 +182,12 @@ uint8_t tileTempBuffer[8];//[64];
 }
 
 /*FORCE_INLINE*/ void DrawWindow(void){
-  if( CurLY > 143 // out of screen bottom
-  || IoRegisters[0xFF4B] > 166 // out of screen right
+/*  if(// CurLY > 143 // out of screen bottom
+   IoRegisters[0xFF4B] > 166 // out of screen right
   || IoRegisters[0xFF4B] < 7 // out of screen left
-  || IoRegisters[0xFF4A] > CurLY // show after current scanline
+  //|| IoRegisters[0xFF4A] > CurLY // show after current scanline
   ) return;
-
+*/
 //  u_int8_t * bgColorTable = (u_int8_t*)&palColorTable[ IoRegisters[ pal_BGP ] ];
 
   u_int32_t LastDisplayedTile = 0xffffffff;
@@ -300,8 +303,6 @@ union sprite * sprites = &SpriteOAM[0xFE00];
 union sprite * spritesEnd = &SpriteOAM[0xFE00 + 40*4];//sprites + 40;
 
 void DrawSprites( void ){// int32_t CurScanline ) {
-
-
   int PatternNum, SpriteFlags, UbyteBuff2, x, y, z, t, xx;
   int SpritePosX, SpritePosY;
   u_int32_t SpriteMaxY;
@@ -325,14 +326,17 @@ void DrawSprites( void ){// int32_t CurScanline ) {
       // visible at this scanline
       *display++ = ( sprite->x << 6 ) | ( sprite - sprites ) ;
       sprite++;
+      if( ++NumberOfSpritesToDisplay == 10 ) break;
     };
 
-    NumberOfSpritesToDisplay = display - (u_int32_t*)ListOfSpritesToDisplay;
+//    NumberOfSpritesToDisplay = display - (u_int32_t*)ListOfSpritesToDisplay;
     if( !NumberOfSpritesToDisplay ) return;
 
     // Sort the list of sprites to display
     if( NumberOfSpritesToDisplay > 1 )
       cqsort( ListOfSpritesToDisplay, &ListOfSpritesToDisplay[NumberOfSpritesToDisplay - 1] );
+
+//    if( NumberOfSpritesToDisplay > 10 ) NumberOfSpritesToDisplay = 10;
 
     // And here we are going to display each sprite (in the right order, of course)
     for (xx = 0; xx < NumberOfSpritesToDisplay; xx++) {
@@ -481,7 +485,7 @@ void DrawSprites( void ){// int32_t CurScanline ) {
   } while( p != (u_int32_t*)&framebuffer[160] );
 }
 
-#define TurnLcdOff clearFramebuffer
+#define TurnLcdOff clearFramebuffer // fix me
 
 #define GetLcdMode() (IoRegisters[0xFF41] & bx00000011)
 //#define SetLcdMode(x) ( IoRegisters[0xFF41] &= (bx11111100 | x) )
@@ -497,7 +501,7 @@ FORCE_INLINE void SetLcdMode(uint8_t x) {
 void write_data_16(uint16_t data);
 void write_command_16(uint16_t data);
 
-void SetScanline( void ){//uint32_t s){
+void SetScanline( void ){
   volatile uint32_t *SET = (uint32_t *) 0xA0002200;
 
   write_command_16(0x20);
@@ -677,7 +681,7 @@ void FlushScanline(){
 
 uint32_t frameCount;
 
-/*FORCE_INLINE*/ void VideoSysUpdate(int cycles, struct zboyparamstype *zboyparams) {
+/*FORCE_INLINE*/ void VideoSysUpdate( int cycles ) {
   static u_int8_t frameskip = 0;
 
   VideoClkCounterVBlank += cycles;
@@ -758,15 +762,27 @@ uint32_t frameCount;
 
       if( scaling ){
         if( CurLY > 2 && CurLY < 155 ){
-          // bg enabled ?
-          if( lcdControlRegister & 1 )
-            DrawBackground();
-          else {
-            clearFramebuffer();
+
+          // window show && draw on scanline ?
+          if( lcdControlRegister & 32
+            && CurLY >= IoRegisters[0xFF4A]
+            && IoRegisters[0xFF4B] < 167
+            && IoRegisters[0xFF4B] > 6
+          ){
+              bgDrawLimitX = IoRegisters[ 0xFF4B ] - 7 ; // bg hide when window start
+
+              if( bgDrawLimitX != 0 ){ // background is visible
+                lcdControlRegister & 1 ? DrawBackground() : clearFramebuffer() ;
+              }
+
+              DrawWindow();
+          } else {
+              bgDrawLimitX = 160; // full line
+              lcdControlRegister & 1 ? DrawBackground() : clearFramebuffer() ;
           }
 
           // window enabled ?
-          if( lcdControlRegister & 32 ) DrawWindow();
+//          if( lcdControlRegister & 32 ) DrawWindow();
 
           if( lcdControlRegister & 2 ) DrawSprites();
 

@@ -31,112 +31,6 @@ struct KeyStateMap {  /* Used for internal monitoring of key states */
 
 struct KeyStateMap KeyState;
 
-/*
-int zboyScancodeToBackendScancode(char *zboyScanCode, int *iflag) {
-  if (strcasecmp(zboyScanCode, "none") == 0) return(DRV_INPUT_NONE);
-
-  if (strcasecmp(zboyScanCode, "kb.f1") == 0) return(DRV_INPUT_KEY_F1);
-  if (strcasecmp(zboyScanCode, "kb.f2") == 0) return(DRV_INPUT_KEY_F2);
-  if (strcasecmp(zboyScanCode, "kb.f3") == 0) return(DRV_INPUT_KEY_F3);
-  if (strcasecmp(zboyScanCode, "kb.f4") == 0) return(DRV_INPUT_KEY_F4);
-  if (strcasecmp(zboyScanCode, "kb.f5") == 0) return(DRV_INPUT_KEY_F5);
-  if (strcasecmp(zboyScanCode, "kb.f6") == 0) return(DRV_INPUT_KEY_F6);
-  if (strcasecmp(zboyScanCode, "kb.f7") == 0) return(DRV_INPUT_KEY_F7);
-  if (strcasecmp(zboyScanCode, "kb.f8") == 0) return(DRV_INPUT_KEY_F8);
-  if (strcasecmp(zboyScanCode, "kb.f9") == 0) return(DRV_INPUT_KEY_F9);
-  if (strcasecmp(zboyScanCode, "kb.f10") == 0) return(DRV_INPUT_KEY_F10);
-  if (strcasecmp(zboyScanCode, "kb.f11") == 0) return(DRV_INPUT_KEY_F11);
-  if (strcasecmp(zboyScanCode, "kb.f12") == 0) return(DRV_INPUT_KEY_F12);
-  if (strcasecmp(zboyScanCode, "kb.esc") == 0) return(DRV_INPUT_KEY_ESC);
-  if (strcasecmp(zboyScanCode, "kb.tab") == 0) return(DRV_INPUT_KEY_TAB);
-  if (strcasecmp(zboyScanCode, "kb.lctrl") == 0) return(DRV_INPUT_KEY_LCTRL);
-  if (strcasecmp(zboyScanCode, "kb.rctrl") == 0) return(DRV_INPUT_KEY_RCTRL);
-  if (strcasecmp(zboyScanCode, "kb.lalt") == 0) return(DRV_INPUT_KEY_LALT);
-  if (strcasecmp(zboyScanCode, "kb.ralt") == 0) return(DRV_INPUT_KEY_RALT);
-  if (strcasecmp(zboyScanCode, "kb.spc") == 0) return(DRV_INPUT_KEY_SPC);
-  if (strcasecmp(zboyScanCode, "kb.ret") == 0) return(DRV_INPUT_KEY_RET);
-  if (strcasecmp(zboyScanCode, "kb.bks") == 0) return(DRV_INPUT_KEY_BKSPC);
-  if (strcasecmp(zboyScanCode, "kb.left") == 0) return(DRV_INPUT_KEY_LEFT);
-  if (strcasecmp(zboyScanCode, "kb.right") == 0) return(DRV_INPUT_KEY_RIGHT);
-  if (strcasecmp(zboyScanCode, "kb.up") == 0) return(DRV_INPUT_KEY_UP);
-  if (strcasecmp(zboyScanCode, "kb.down") == 0) return(DRV_INPUT_KEY_DOWN);
-  if (strcasecmp(zboyScanCode, "kb.rshift") == 0) return(DRV_INPUT_KEY_RSHIFT);
-  if (strcasecmp(zboyScanCode, "kb.lshift") == 0) return(DRV_INPUT_KEY_LSHIFT);
-  if (strcasecmp(zboyScanCode, "kb.lwin") == 0) return(DRV_INPUT_KEY_LWIN);
-  if (strcasecmp(zboyScanCode, "kb.rwin") == 0) return(DRV_INPUT_KEY_RWIN);
-  if (strcasecmp(zboyScanCode, "kb.menu") == 0) return(DRV_INPUT_KEY_MENU);
-  if (strcasecmp(zboyScanCode, "kb.pgup") == 0) return(DRV_INPUT_KEY_PGUP);
-  if (strcasecmp(zboyScanCode, "kb.pgdw") == 0) return(DRV_INPUT_KEY_PGDOWN);
-  if (strcasecmp(zboyScanCode, "kb.home") == 0) return(DRV_INPUT_KEY_HOME);
-  if (strcasecmp(zboyScanCode, "kb.end") == 0) return(DRV_INPUT_KEY_END);
-  if (strcasecmp(zboyScanCode, "kb.ins") == 0) return(DRV_INPUT_KEY_INS);
-  if (strcasecmp(zboyScanCode, "kb.del") == 0) return(DRV_INPUT_KEY_DEL);
-  if (strcasecmp(zboyScanCode, "kb.a") == 0) return(DRV_INPUT_KEY_A);
-  if (strcasecmp(zboyScanCode, "kb.b") == 0) return(DRV_INPUT_KEY_B);
-  if (strcasecmp(zboyScanCode, "kb.c") == 0) return(DRV_INPUT_KEY_C);
-  if (strcasecmp(zboyScanCode, "kb.d") == 0) return(DRV_INPUT_KEY_D);
-  if (strcasecmp(zboyScanCode, "kb.e") == 0) return(DRV_INPUT_KEY_E);
-  if (strcasecmp(zboyScanCode, "kb.f") == 0) return(DRV_INPUT_KEY_F);
-  if (strcasecmp(zboyScanCode, "kb.g") == 0) return(DRV_INPUT_KEY_G);
-  if (strcasecmp(zboyScanCode, "kb.h") == 0) return(DRV_INPUT_KEY_H);
-  if (strcasecmp(zboyScanCode, "kb.i") == 0) return(DRV_INPUT_KEY_I);
-  if (strcasecmp(zboyScanCode, "kb.j") == 0) return(DRV_INPUT_KEY_J);
-  if (strcasecmp(zboyScanCode, "kb.k") == 0) return(DRV_INPUT_KEY_K);
-  if (strcasecmp(zboyScanCode, "kb.l") == 0) return(DRV_INPUT_KEY_L);
-  if (strcasecmp(zboyScanCode, "kb.m") == 0) return(DRV_INPUT_KEY_M);
-  if (strcasecmp(zboyScanCode, "kb.n") == 0) return(DRV_INPUT_KEY_N);
-  if (strcasecmp(zboyScanCode, "kb.o") == 0) return(DRV_INPUT_KEY_O);
-  if (strcasecmp(zboyScanCode, "kb.p") == 0) return(DRV_INPUT_KEY_P);
-  if (strcasecmp(zboyScanCode, "kb.q") == 0) return(DRV_INPUT_KEY_Q);
-  if (strcasecmp(zboyScanCode, "kb.r") == 0) return(DRV_INPUT_KEY_R);
-  if (strcasecmp(zboyScanCode, "kb.s") == 0) return(DRV_INPUT_KEY_S);
-  if (strcasecmp(zboyScanCode, "kb.t") == 0) return(DRV_INPUT_KEY_T);
-  if (strcasecmp(zboyScanCode, "kb.u") == 0) return(DRV_INPUT_KEY_U);
-  if (strcasecmp(zboyScanCode, "kb.v") == 0) return(DRV_INPUT_KEY_V);
-  if (strcasecmp(zboyScanCode, "kb.w") == 0) return(DRV_INPUT_KEY_W);
-  if (strcasecmp(zboyScanCode, "kb.x") == 0) return(DRV_INPUT_KEY_X);
-  if (strcasecmp(zboyScanCode, "kb.y") == 0) return(DRV_INPUT_KEY_Y);
-  if (strcasecmp(zboyScanCode, "kb.z") == 0) return(DRV_INPUT_KEY_Z);
-  if (strcasecmp(zboyScanCode, "kb.0") == 0) return(DRV_INPUT_KEY_0);
-  if (strcasecmp(zboyScanCode, "kb.1") == 0) return(DRV_INPUT_KEY_1);
-  if (strcasecmp(zboyScanCode, "kb.2") == 0) return(DRV_INPUT_KEY_2);
-  if (strcasecmp(zboyScanCode, "kb.3") == 0) return(DRV_INPUT_KEY_3);
-  if (strcasecmp(zboyScanCode, "kb.4") == 0) return(DRV_INPUT_KEY_4);
-  if (strcasecmp(zboyScanCode, "kb.5") == 0) return(DRV_INPUT_KEY_5);
-  if (strcasecmp(zboyScanCode, "kb.6") == 0) return(DRV_INPUT_KEY_6);
-  if (strcasecmp(zboyScanCode, "kb.7") == 0) return(DRV_INPUT_KEY_7);
-  if (strcasecmp(zboyScanCode, "kb.8") == 0) return(DRV_INPUT_KEY_8);
-  if (strcasecmp(zboyScanCode, "kb.9") == 0) return(DRV_INPUT_KEY_9);
-
-if (strcasecmp(zboyScanCode, "joy.a1pos") == 0) return(DRV_INPUT_JOYAX_1POS);
-  if (strcasecmp(zboyScanCode, "joy.a1neg") == 0) return(DRV_INPUT_JOYAX_1NEG);
-  if (strcasecmp(zboyScanCode, "joy.a2pos") == 0) return(DRV_INPUT_JOYAX_2POS);
-  if (strcasecmp(zboyScanCode, "joy.a2neg") == 0) return(DRV_INPUT_JOYAX_2NEG);
-  if (strcasecmp(zboyScanCode, "joy.a3pos") == 0) return(DRV_INPUT_JOYAX_3POS);
-  if (strcasecmp(zboyScanCode, "joy.a3neg") == 0) return(DRV_INPUT_JOYAX_3NEG);
-  if (strcasecmp(zboyScanCode, "joy.a4pos") == 0) return(DRV_INPUT_JOYAX_4POS);
-  if (strcasecmp(zboyScanCode, "joy.a4neg") == 0) return(DRV_INPUT_JOYAX_4NEG);
-  if (strcasecmp(zboyScanCode, "joy.b1") == 0) return(DRV_INPUT_JOY_1);
-  if (strcasecmp(zboyScanCode, "joy.b2") == 0) return(DRV_INPUT_JOY_2);
-  if (strcasecmp(zboyScanCode, "joy.b3") == 0) return(DRV_INPUT_JOY_3);
-  if (strcasecmp(zboyScanCode, "joy.b4") == 0) return(DRV_INPUT_JOY_4);
-  if (strcasecmp(zboyScanCode, "joy.b5") == 0) return(DRV_INPUT_JOY_5);
-  if (strcasecmp(zboyScanCode, "joy.b6") == 0) return(DRV_INPUT_JOY_6);
-  if (strcasecmp(zboyScanCode, "joy.b7") == 0) return(DRV_INPUT_JOY_7);
-  if (strcasecmp(zboyScanCode, "joy.b8") == 0) return(DRV_INPUT_JOY_8);
-  if (strcasecmp(zboyScanCode, "joy.b9") == 0) return(DRV_INPUT_JOY_9);
-  if (strcasecmp(zboyScanCode, "joy.b10") == 0) return(DRV_INPUT_JOY_10);
-  if (strcasecmp(zboyScanCode, "joy.b11") == 0) return(DRV_INPUT_JOY_11);
-  if (strcasecmp(zboyScanCode, "joy.b12") == 0) return(DRV_INPUT_JOY_12);
-  if (strcasecmp(zboyScanCode, "joy.b13") == 0) return(DRV_INPUT_JOY_13);
-  if (strcasecmp(zboyScanCode, "joy.b14") == 0) return(DRV_INPUT_JOY_14);
-  if (strcasecmp(zboyScanCode, "joy.b15") == 0) return(DRV_INPUT_JOY_15);
-  if (strcasecmp(zboyScanCode, "joy.b16") == 0) return(DRV_INPUT_JOY_16);
-  *iflag |= IFLAG_ERROR;
-  return(DRV_INPUT_NONE);
-}
-*/
-
 #define DownIsPressed(); \
   if (KeyState.Down == 0) { \
     KeyState.Down = 1<<3; \
@@ -209,66 +103,8 @@ if (strcasecmp(zboyScanCode, "joy.a1pos") == 0) return(DRV_INPUT_JOYAX_1POS);
 #define ButtonBisReleased(); \
   KeyState.B = 0;
 
-#define ButtonTurboAisPressed(); \
-  turbo_a = 1; \
-  turbo_a_nextswap = TotalCycles;
-
-#define ButtonTurboAisReleased(); \
-  turbo_a = 0; \
-  KeyState.A = 0;
-
-#define ButtonTurboBisPressed(); \
-  turbo_b = 1; \
-  turbo_b_nextswap = TotalCycles;
-
-#define ButtonTurboBisReleased(); \
-  turbo_b = 0; \
-  KeyState.B = 0;
-
-#define ButtonBgctrlIsReleased(); \
-  if (HideBackgroundDisplay == 0) { \
-      HideBackgroundDisplay = 1; \
-      SetUserMsg("BACKGROUND OFF"); \
-    } else { \
-      HideBackgroundDisplay = 0; \
-      SetUserMsg("BACKGROUND ON"); \
-  }
-
-#define ButtonSprctrlIsReleased(); \
-  if (HideSpritesDisplay == 0) { \
-      HideSpritesDisplay = 1; \
-      SetUserMsg("SPRITES OFF"); \
-    } else { \
-      HideSpritesDisplay = 0; \
-      SetUserMsg("SPRITES ON"); \
-  }
-
-#define ButtonWinctrlIsReleased(); \
-  if (HideWindowDisplay == 0) { \
-      HideWindowDisplay = 1; \
-      SetUserMsg("WINDOW OFF"); \
-    } else { \
-      HideWindowDisplay = 0; \
-      SetUserMsg("WINDOW ON"); \
-  }
-
-#define ButtonScreenshotIsReleased(); \
-  AskForScreenshot = 1;
-
-#define ButtonAutoscreenshotIsReleased(); \
-  if (AutoScreenshot == 0) { \
-      AutoScreenshot = 1; \
-      SetUserMsg("AUTOSCREENSHOT ON"); \
-    } else { \
-      AutoScreenshot = 0; \
-      SetUserMsg("AUTOSCREENSHOT OFF"); \
-  }
-
 #define ButtonResetIsReleased(); \
-  SetUserMsg("RESET..."); \
-  if (zboyparams->HiScoresMem != 0) SaveHiScoresMem(); \
-  ResetEmulator(); \
-  if (zboyparams->HiScoresMem != 0) LoadHiScoresMem(); \
+  ResetEmulator();
 
 #define ButtonSaveIsReleased(); \
   SaveGame();
@@ -276,8 +112,228 @@ if (strcasecmp(zboyScanCode, "joy.a1pos") == 0) return(DRV_INPUT_JOYAX_1POS);
 #define ButtonLoadIsReleased(); \
   LoadGame();
 
-#define ButtonQuitIsReleased(); \
-  QuitEmulator = 1;
+//#define ButtonQuitIsReleased();
+
+void riseA( void ){
+  ButtonAisPressed();
+}
+
+void fallA( void ){
+  ButtonAisReleased();
+}
+
+void riseB( void ){
+  ButtonBisPressed();
+}
+
+void fallB( void ){
+  ButtonBisReleased();
+}
+
+void riseC( void ){
+  StartIsPressed();
+}
+
+void fallC( void ){
+  StartIsReleased();
+}
+
+void riseU( void ){
+  UpIsPressed();
+}
+
+void fallU( void ){
+  UpIsReleased();
+}
+
+void riseD( void ){
+  DownIsPressed();
+}
+
+void fallD( void ){
+  DownIsReleased();
+}
+
+void riseL( void ){
+  LeftIsPressed();
+}
+
+void fallL( void ){
+  LeftIsReleased();
+}
+
+void riseR( void ){
+  RightIsPressed();
+}
+
+void fallR( void ){
+  RightIsReleased();
+}
+
+/*
+#include "mbed.h"
+
+#define BTN_A (1<<9)
+#define BTN_B (1<<4)
+#define BTN_C (1<<10)
+#define BTN_UP (1<<13)
+#define BTN_DOWN (1<<3)
+#define BTN_LEFT (1<<25)
+#define BTN_RIGHT (1<<7)
+
+#define KEY_MASK ( BTN_A | BTN_B | BTN_C | BTN_UP | BTN_DOWN | BTN_LEFT | BTN_RIGHT )
+
+PortIn keysPort( PortA, KEY_MASK );
+
+void readKeys( void ){
+  u_int32_t last = 0xffffffff;
+  register u_int32_t keys = keysPort.read();
+}
+*/
+
+#define baseKey 0xA0000020
+#define readKey(k) ( *(volatile u_int8_t*)( baseKey + k ) )
+
+#define kDown readKey(3)
+#define kB readKey(4)
+#define kRight readKey(7)
+#define kA readKey(9)
+#define kC readKey(10)
+#define kUp readKey(13)
+#define kLeft readKey(25)
+#define kStart kC
+
+/*
+#define BTN_UP      1
+#define BTN_RIGHT   2
+#define BTN_DOWN    3
+#define BTN_LEFT    0
+#define BTN_A       4
+#define BTN_B       5
+#define BTN_C       6
+
+#define kDown readKey(BTN_DOWN)
+#define kB readKey(BTN_B)
+#define kRight readKey(BTN_RIGHT)
+#define kA readKey(BTN_A)
+#define kC readKey(BTN_C)
+#define kUp readKey(BTN_UP)
+#define kLeft readKey(BTN_LEFT)
+#define kStart kC
+
+extern u_int8_t * btnStates;
+
+#define readKey(k) ( btnStates[k] )
+
+extern void pollButtons(void);
+*/
+
+#define kDownMask 0x8
+#define kUpMask 0x4
+#define kLeftMask 0x2
+#define kRightMask 0x1
+
+#define kStartMask 0x8
+#define kSelectMask 0x4
+#define kAMask 0x2
+#define kBMask 0x1
+
+void slog( char * s );
+char b[64];
+
+void keyPadUpdate( uint32_t cycles ){
+//  static uint8_t lastA = 0x3F, lastB = 0x3F;
+  static u_int32_t cpt = 0;
+
+  cpt += cycles;
+  if( cpt < 80000 ) return;
+  cpt = 0;
+
+  //pollButtons();
+
+  static u_int8_t lastA = 0x2F, lastB = 0x1F;
+  //u_int8_t rr = *_IoRegisters;
+
+  register u_int8_t r = ( *_IoRegisters ) & 0xF0;
+  u_int8_t pressed = 0, last;
+
+  switch( r ){
+    case 0x20:
+      last = lastA;
+
+      //r = 0x30;
+
+      if( !kDown )
+        r |= kDownMask;
+      else if( last & kDownMask ) pressed = 1;
+
+      if( !kUp )
+        r |= kUpMask;
+      else if( last & kUpMask ) pressed = 1;
+
+      if( !kLeft )
+        r |= kLeftMask;
+      else if( last & kLeftMask ) pressed = 1;
+
+      if( !kRight )
+        r |= kRightMask;
+      else if( last & kRightMask ) pressed = 1;
+
+      *_IoRegisters = r;
+
+//      sprintf(b, "0x%02X 0x%02X 0x%02X 0x%02X",rr, r, lastA, lastB);
+//      slog( b );
+
+      if( r != last ) lastA = r;
+      if( pressed ) INT(INT_JOYPAD);
+    return;
+
+    case 0x10:
+      last = lastB;
+
+      //r = 0x30;
+
+      if( !kStart )
+        r |= kStartMask;
+      else if( last & kStartMask ) pressed = 1;
+
+      r |= kSelectMask; // set select as not pressed
+
+/*
+      if( !kSelect )
+        r |= kSelectMask;
+      else if( last & kSelectMask ) pressed = 1;
+*/
+
+      if( !kA )
+        r |= kAMask;
+      else if( last & kAMask ) pressed = 1;
+
+      if( !kB )
+        r |= kBMask;
+      else if( last & kBMask ) pressed = 1;
+//if( ! r&kStartMask ){
+
+//}
+
+      *_IoRegisters = r;
+
+      //sprintf(b, "0x%02X 0x%02X 0x%02X 0x%02X",rr, r, lastA, lastB);
+      //slog( b );
+
+//      sprintf(b, "0x%02X 0x%02X 0x%02X 0x%02X",rr, r, lastA, lastB); print( b );
+
+      if( r != last ) lastB = r;
+      if( pressed ) INT(INT_JOYPAD);
+    return;
+
+    default:
+      *_IoRegisters = 0xF0;//r ^ 0xff;// | 0x0F;//0xF0;
+      //sprintf(b, "0x%02X",*_IoRegisters);
+      //slog( b );
+    return;
+  };
+}
 
 uint32_t JoyCheckCounter;
 inline void CheckJoypad( uint32_t cycles, struct zboyparamstype *zboyparams) {
@@ -287,12 +343,11 @@ inline void CheckJoypad( uint32_t cycles, struct zboyparamstype *zboyparams) {
   JoyCheckCounter += cycles;
 
   if (JoyCheckCounter < 80000 ) {
-    /* Check joypad state every ~20 ms */
     return;
   }
-  
+
   JoyCheckCounter = 0;
-  /* Now poll the event queue... */
+
   while ((event = drv_keypoll()) != DRV_INPUT_NONE) {
     switch (drv_event_gettype(event)) {
     case DRV_INPUT_KEYBOARD | DRV_INPUT_KEYDOWN:
@@ -319,54 +374,33 @@ inline void CheckJoypad( uint32_t cycles, struct zboyparamstype *zboyparams) {
     case DRV_INPUT_KEYBOARD | DRV_INPUT_KEYUP:
     case DRV_INPUT_JOYSTICK | DRV_INPUT_JOYUP:
     case DRV_INPUT_JOYSTICK | DRV_INPUT_JOYAXUP:
-      if (drv_event_getval(event) == zboyparams->key_start) { /* ENTER */
+      if (drv_event_getval(event) == zboyparams->key_start) {
 	StartIsReleased();
-      } else if (drv_event_getval(event) == zboyparams->key_select) { /* TAB */
+      } else if (drv_event_getval(event) == zboyparams->key_select) {
 	SelectIsReleased();
-      } else if (drv_event_getval(event) == zboyparams->key_b) { /* ALT */
+      } else if (drv_event_getval(event) == zboyparams->key_b) {
 	ButtonBisReleased();
-      } else if (drv_event_getval(event) == zboyparams->key_a) { /* LCTRL */
+      } else if (drv_event_getval(event) == zboyparams->key_a) {
 	ButtonAisReleased();
-      } else if (drv_event_getval(event) == zboyparams->key_up) { /* UP */
+      } else if (drv_event_getval(event) == zboyparams->key_up) {
 	UpIsReleased();
-      } else if (drv_event_getval(event) == zboyparams->key_down) { /* DOWN */
+      } else if (drv_event_getval(event) == zboyparams->key_down) {
 	DownIsReleased();
-      } else if (drv_event_getval(event) == zboyparams->key_left) { /* LEFT */
+      } else if (drv_event_getval(event) == zboyparams->key_left) {
 	LeftIsReleased();
-      } else if (drv_event_getval(event) == zboyparams->key_right) { /* RIGHT */
+      } else if (drv_event_getval(event) == zboyparams->key_right) {
 	RightIsReleased();
-	/*
-	  } else if (drv_event_getval(event) == zboyparams->key_bckg) { /* F1 * /
-	  ButtonBgctrlIsReleased();
-	  } else if (drv_event_getval(event) == zboyparams->key_sprt) { /* F2 * /
-	  ButtonSprctrlIsReleased();
-	  } else if (drv_event_getval(event) == zboyparams->key_wind) { /* F3 * /
-	  ButtonWinctrlIsReleased();
-	*/
-      } else if (drv_event_getval(event) == zboyparams->key_save) { /* F5 */
+      } else if (drv_event_getval(event) == zboyparams->key_save) {
 	  ButtonSaveIsReleased();
-      } else if (drv_event_getval(event) == zboyparams->key_load) { /* F7 */
+      } else if (drv_event_getval(event) == zboyparams->key_load) {
 	  ButtonLoadIsReleased();
-	  /*
-	  } else if (drv_event_getval(event) == zboyparams->key_asht) { /* F8 * /
-	  ButtonAutoscreenshotIsReleased();
-	  } else if (drv_event_getval(event) == zboyparams->key_shot) { /* F9 * /
-	  ButtonScreenshotIsReleased();
-	  } else if (drv_event_getval(event) == zboyparams->key_rset) { /* F10 * /
-	  ButtonResetIsReleased();
-	  } else if (drv_event_getval(event) == zboyparams->key_quit) { /* ESC * /
-	  ButtonQuitIsReleased();
-	  /* */
       }
       break;
-    case DRV_INPUT_QUIT:
-      QuitEmulator = 1;
-      break;
     }
+
   }
 
   JoyRegA = 0xF ^ (KeyState.Down | KeyState.Up | KeyState.Left | KeyState.Right);
   JoyRegB = 0xF ^ (KeyState.Start | KeyState.Select | KeyState.A | KeyState.B);
   JoypadWrite( IoRegisters[0xFF00] );
-  
 }

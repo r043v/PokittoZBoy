@@ -1,61 +1,70 @@
 #include <algorithm>
 #include "Pokitto.h"
+//#include "PokittoMini.h"
 
+//#include "stdint.h"
+//#include "./PokittoLib/POKITTO_CORE/Macros_LCD.h"
 using namespace Pokitto;
 
 #include "save.hpp"
 
-extern u_int32_t scaling;
+//#include <USBSerial.h>
+//USBSerial serial;
+
+extern uint32_t scaling;
 
 extern "C" {
-#include "drv.h"
+  #include "drv.h"
 
-//void asmqsort( int*f, int n );
+  //void asmqsort( int*f, int n );
 
-void cqsort( int*f, int*l ){
-  std::sort(f,l);
-}
+  void cqsort( int*f, int*l ){
+    std::sort(f,l);
+  }
 
-volatile uint32_t *LCD = reinterpret_cast< volatile uint32_t * >(0xA0002188);
+  uint8_t * btnStates = Pokitto::heldStates;
 
-void __wrap_free(void *){}
+  void pollButtons( void ){
+    Buttons::pollButtons();
+  }
 
-void write_command_16(uint16_t data)
-{
-   CLR_CS; // select lcd
-   CLR_CD; // clear CD = command
-   SET_RD; // RD high, do not read
-  *LCD = uint32_t(data) << 3;
-   CLR_WR_SLOW;  // WR low
-   SET_WR;  // WR low, then high = write strobe
-   SET_CS; // de-select lcd
-}
+  volatile uint32_t * LCD = (uint32_t*)0xA0002188;
 
-void write_data_16(uint16_t data)
-{
-  CLR_CS;
-  SET_CD;
-  SET_RD;
-  *LCD = uint32_t(data) << 3;
-  CLR_WR;
-  SET_WR;
-  SET_CS;
-}
+  void __wrap_free(void *){}
 
-int zboymain(int argc, char **argv);
+  void write_command_16(uint16_t data){
+     CLR_CS; // select lcd
+     CLR_CD; // clear CD = command
+     SET_RD; // RD high, do not read
+    *LCD = uint32_t(data) << 3;
+     CLR_WR_SLOW;  // WR low
+     SET_WR;  // WR low, then high = write strobe
+     SET_CS; // de-select lcd
+  }
 
+  void write_data_16(uint16_t data){
+    CLR_CS;
+    SET_CD;
+    SET_RD;
+    *LCD = uint32_t(data) << 3;
+    CLR_WR;
+    SET_WR;
+    SET_CS;
+  }
+
+  void zboymain(void);
 }
 
 
 // extern uint8_t *framebuffer;
 
-/* initialization of the I/O subsystem. This is called by zBoy once, when the
- * emulator starts. screenwidth and screenheight must contain the size of
- * requested virtual screen, joyid is either the id of the joystick that have
- * to be polled (0..x) or -1 if no joystick support is required. */
-extern "C" int drv_init(int screenwidth, int screenheight, int joyid){
-  // framebuffer = Pokitto::Display::screenbuffer;
-  return 0;
+extern "C" void print(char *msg) {
+  Pokitto::setWindow( 0, 0, 176, 220 );
+  Pokitto::Display::enableDirectPrinting(true);
+  Pokitto::Display::setCursor(1, 1);
+  Pokitto::Display::print(msg);
+  Pokitto::setWindow( 0, 10, 176, 199+10 );
+  //wait_ms(10);
 }
 
 extern "C" void SetUserMsg(char *msg) {
@@ -184,7 +193,6 @@ int drv_keypoll(void){
 
 }
 
-
 /* loads a palette of colors into zBoy. *palette must be an array of at least
  * 256 color values written in 32bits each as RGB triplets */
 int drv_loadpal(uint32_t *palette){
@@ -281,8 +289,7 @@ int main () {
 
   pokInitSD();
 
-  char *args[] = {""};
-  *reinterpret_cast<uint32_t *>(0x40048080) |= 3 << 26;
+  *(uint32_t *)0x40048080 |= 3 << 26;
 
   checkMapper();
 
@@ -290,5 +297,7 @@ int main () {
 
   screenInit();
 
-  zboymain(0, args);
+  zboymain();
+
+  return 0;
 }

@@ -56,7 +56,6 @@ void indexRAMmbc1(){
 
 
 void MBC1Write( uint32_t memaddr, uint8_t DataByte, uint8_t *buffer ){
-  uint32_t OldRomBank = CurRomBank;
   if ( memaddr < 0x2000 ){
     // nop
   } else if ( memaddr < 0x4000 ) {

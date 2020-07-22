@@ -30,167 +30,27 @@ vpath %.s .
 ###############################################################################
 # Project settings
 
-PROJECT := HelloWorld
+PROJECT := zboy
 
-BPROJECT := BUILD/HelloWorld
+BPROJECT := BUILD/zboy
 
 # Project settings
 ###############################################################################
 # Objects and Paths
 
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/TIC806x6.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/ZXSpec.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/adventurer12x16.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/donut7x10.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/dragon6x8.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/font3x3.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/font3x5.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/font5x7.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/fontC64.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/fontC64UIGfx.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/karateka8x11.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/koubit7x7.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/mini4x6.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/runes6x8.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/tight4x7.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/FONTS/tiny5x7.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PALETTES/palAction.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PALETTES/palCGA.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PALETTES/palDB16.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PALETTES/palDefault.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PALETTES/palGameboy.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PALETTES/palMagma.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PALETTES/palMono.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PALETTES/palPico.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PALETTES/palRainbow.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PALETTES/palZXSpec.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoBacklight.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoBattery.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoButtons.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoConsole.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoCore.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoDisk.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoDisplay.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoItoa.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoLogos.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoPalette.o
-OBJECTS += BUILD/PokittoLib/POKITTO_CORE/PokittoSound.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/HWButtons.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/HWLCD.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/HWSound.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/PokittoClock.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/PokittoHW.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/Pokitto_extport.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/SoftwareI2C.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/clock_11u6x.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/dma_11u6x.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/iap.o
-OBJECTS += BUILD/PokittoLib/POKITTO_HW/timer_11u6x.o
-# OBJECTS += BUILD/PokittoLib/POKITTO_LIBS/ImageFormat/BmpImage.o
-OBJECTS += BUILD/PokittoLib/POKITTO_LIBS/Synth/Synth.o
-OBJECTS += BUILD/PokittoLib/POKITTO_LIBS/Synth/Synth_envfuncs.o
-OBJECTS += BUILD/PokittoLib/POKITTO_LIBS/Synth/Synth_helpers.o
-OBJECTS += BUILD/PokittoLib/POKITTO_LIBS/Synth/Synth_mixfuncs.o
-OBJECTS += BUILD/PokittoLib/POKITTO_LIBS/Synth/Synth_oscfuncs.o
-OBJECTS += BUILD/PokittoLib/POKITTO_LIBS/Synth/Synth_songfuncs.o
-OBJECTS += BUILD/PokittoLib/POKITTO_LIBS/Synth/Synth_wavefuncs.o
-OBJECTS += BUILD/PokittoLib/POKITTO_XTERNALS/Arduino/delay.o
-OBJECTS += BUILD/PokittoLib/libpff/mmc.o
-OBJECTS += BUILD/PokittoLib/libpff/pff.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/BusIn.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/BusInOut.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/BusOut.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/CAN.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/CallChain.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/Ethernet.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/FileBase.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/FileLike.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/FilePath.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/FileSystemLike.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/I2C.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/I2CSlave.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/InterruptIn.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/InterruptManager.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/LocalFileSystem.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/RawSerial.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/SPI.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/SPISlave.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/Serial.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/SerialBase.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/Stream.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/Ticker.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/Timeout.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/Timer.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/TimerEvent.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/assert.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/board.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/error.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/gpio.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/lp_ticker_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/mbed_interface.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/pinmap_common.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/retarget.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/rtc_time.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/semihost_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/ticker_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/us_ticker_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/common/wait_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP/TARGET_LPC11U6X/TOOLCHAIN_GCC_ARM/TARGET_LPC11U68/startup_LPC11U68.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP/TARGET_LPC11U6X/cmsis_nvic.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP/TARGET_LPC11U6X/system_LPC11U6x.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/analogin_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/gpio_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/gpio_irq_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/i2c_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/pinmap.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/pwmout_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/rtc_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/serial_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/sleep.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/spi_api.o
-OBJECTS += BUILD/PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X/us_ticker.o
+SOURCES = $(shell find PokittoLib -type f -iname '*.cpp')
+SOURCES += $(shell find PokittoLib -type f -iname '*.c')
+SOURCES += $(shell find PokittoLib -type f -iname '*.s')
+OBJECTS = $(foreach x, $(basename $(SOURCES)), BUILD/$(x).o)
 
 OBJECTS += BUILD/main.o
 OBJECTS += BUILD/zboy.o
 OBJECTS += BUILD/drv_pok.o
 OBJECTS += BUILD/config.o
-#OBJECTS += BUILD/rom.o
 
-#OBJECTS += BUILD/loadpal.o
-#OBJECTS += BUILD/loadrom.o
-#OBJECTS += BUILD/net_none.o
-#OBJECTS += BUILD/asmqsort.o
-#OBJECTS += asmqsort.s.o
-#OBJECTS += BUILD/crc32.o
-#OBJECTS += BUILD/wordwrap.o
-
-
+FOLDERS=$(shell find PokittoLib -type d)
 INCLUDE_PATHS += -I./.
-INCLUDE_PATHS += -I./PokittoLib
-INCLUDE_PATHS += -I./PokittoLib/POKITTO_CORE
-INCLUDE_PATHS += -I./PokittoLib/POKITTO_CORE/FONTS
-INCLUDE_PATHS += -I./PokittoLib/POKITTO_CORE/PALETTES
-INCLUDE_PATHS += -I./PokittoLib/POKITTO_HW
-INCLUDE_PATHS += -I./PokittoLib/POKITTO_LIBS
-INCLUDE_PATHS += -I./PokittoLib/POKITTO_LIBS/ImageFormat
-INCLUDE_PATHS += -I./PokittoLib/POKITTO_LIBS/Synth
-INCLUDE_PATHS += -I./PokittoLib/POKITTO_XTERNALS
-INCLUDE_PATHS += -I./PokittoLib/POKITTO_XTERNALS/Arduino
-INCLUDE_PATHS += -I./PokittoLib/libpff
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/api
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/common
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/hal
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/targets
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/targets/cmsis
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP/TARGET_LPC11U6X
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP/TARGET_LPC11U6X/TOOLCHAIN_GCC_ARM
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP/TARGET_LPC11U6X/TOOLCHAIN_GCC_ARM/TARGET_LPC11U68
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/targets/cmsis/TOOLCHAIN_GCC
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/targets/hal
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP
-INCLUDE_PATHS += -I./PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X
+INCLUDE_PATHS += $(foreach x, $(basename $(FOLDERS)), -I./$(x))
 
 LIBRARY_PATHS :=
 LIBRARIES :=
@@ -199,14 +59,13 @@ LINKER_SCRIPT ?= ./PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP/TARGET_LPC11
 # Objects and Paths
 ###############################################################################
 # Tools and Flags
-
+#-std=gnu++89
 AS      = 'arm-none-eabi-gcc' '-x' 'assembler-with-cpp' '-c' '-Wall' '-Wextra' '-Wno-unused-parameter' '-Wno-missing-field-initializers' '-fmessage-length=0' '-fno-exceptions' '-fno-builtin' '-ffunction-sections' '-fdata-sections' '-funsigned-char' '-MMD' '-fno-delete-null-pointer-checks' '-fomit-frame-pointer' '-O3' '-g1' '-DMBED_RTOS_SINGLE_THREAD' '-mtune=cortex-m0plus' '-mcpu=cortex-m0plus' '-mthumb'
 CC      = 'arm-none-eabi-gcc' '-std=gnu89' '-c' '-Wall' '-Wextra' '-Wno-unused-parameter' '-Wno-missing-field-initializers' '-fmessage-length=0' '-fno-exceptions' '-fno-builtin' '-ffunction-sections' '-fdata-sections' '-funsigned-char' '-MMD' '-fno-delete-null-pointer-checks' '-fomit-frame-pointer' '-O3' '-g1' '-DMBED_RTOS_SINGLE_THREAD' '-mtune=cortex-m0plus' '-mcpu=cortex-m0plus' '-mthumb'
 CPP     = 'arm-none-eabi-g++' '-std=gnu++98' '-fno-rtti' '-Wvla' '-c' '-Wall' '-Wextra' '-Wno-unused-parameter' '-Wno-missing-field-initializers' '-fmessage-length=0' '-fno-exceptions' '-fno-builtin' '-ffunction-sections' '-fdata-sections' '-funsigned-char' '-MMD' '-fno-delete-null-pointer-checks' '-fomit-frame-pointer' '-O3' '-g1' '-DMBED_RTOS_SINGLE_THREAD' '-mtune=cortex-m0plus' '-mcpu=cortex-m0plus' '-mthumb'
 LD      = 'arm-none-eabi-gcc'
 ELF2BIN = 'arm-none-eabi-objcopy'
 PREPROC = 'arm-none-eabi-cpp' '-E' '-P' '-Wl,--gc-sections' '-Wl,--wrap,main' '-Wl,--wrap,_malloc_r' '-Wl,--wrap,_free_r' '-Wl,--wrap,_realloc_r' '-Wl,--wrap,_memalign_r' '-Wl,--wrap,_calloc_r' '-Wl,--wrap,exit' '-Wl,--wrap,atexit' '-Wl,-n' '--specs=nano.specs' '-mcpu=cortex-m0plus' '-mthumb'
-
 
 C_FLAGS += -std=gnu89
 C_FLAGS += -DTARGET_LPC11U68
@@ -239,13 +98,8 @@ C_FLAGS += -DDEVICE_SPI=1
 C_FLAGS += -DDEVICE_ANALOGIN=1
 C_FLAGS += -DDEVICE_PWMOUT=1
 C_FLAGS += -DTARGET_LIKE_CORTEX_M0
-#C_FLAGS += -include
-#C_FLAGS += mbed_config.h
-#C_FLAGS += '-DEMBEDROM="tank.c"'
-#C_FLAGS += '-DMBC0'
-#C_FLAGS += '-DSCALING'
-#CXX_FLAGS += '-DSCALING'
-CXX_FLAGS += -std=gnu++14
+
+CXX_FLAGS += -std=gnu++98
 CXX_FLAGS += -fno-rtti
 CXX_FLAGS += -Wvla
 CXX_FLAGS += -DTARGET_LPC11U68
@@ -281,9 +135,6 @@ CXX_FLAGS += -DTARGET_LIKE_CORTEX_M0
 
 C_FLAGS += -Wfatal-errors
 CXX_FLAGS += -Wfatal-errors
-#CXX_FLAGS += mbed_config.h
-
-
 
 #overclock
 C_FLAGS += -D_OSCT=2
@@ -303,33 +154,9 @@ ASM_FLAGS += -D__CMSIS_RTOS
 ASM_FLAGS += -D__MBED_CMSIS_RTOS_CM
 ASM_FLAGS += -D__CORTEX_M0PLUS
 ASM_FLAGS += -DARM_MATH_CM0PLUS
-ASM_FLAGS += -I./.
-ASM_FLAGS += -I./PokittoLib
-ASM_FLAGS += -I./PokittoLib/POKITTO_CORE
-ASM_FLAGS += -I./PokittoLib/POKITTO_CORE/FONTS
-ASM_FLAGS += -I./PokittoLib/POKITTO_CORE/PALETTES
-ASM_FLAGS += -I./PokittoLib/POKITTO_HW
-ASM_FLAGS += -I./PokittoLib/POKITTO_LIBS
-ASM_FLAGS += -I./PokittoLib/POKITTO_LIBS/ImageFormat
-ASM_FLAGS += -I./PokittoLib/POKITTO_LIBS/Synth
-ASM_FLAGS += -I./PokittoLib/POKITTO_XTERNALS
-ASM_FLAGS += -I./PokittoLib/POKITTO_XTERNALS/Arduino
-ASM_FLAGS += -I./PokittoLib/libpff
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/api
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/common
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/hal
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/cmsis
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP/TARGET_LPC11U6X
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP/TARGET_LPC11U6X/TOOLCHAIN_GCC_ARM
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/cmsis/TARGET_NXP/TARGET_LPC11U6X/TOOLCHAIN_GCC_ARM/TARGET_LPC11U68
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/cmsis/TOOLCHAIN_GCC
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/hal
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP
-ASM_FLAGS += -I./PokittoLib/mbed-pokitto/targets/hal/TARGET_NXP/TARGET_LPC11U6X
 
+ASM_FLAGS += -I./.
+ASM_FLAGS += $(foreach x, $(basename $(FOLDERS)), -I./$(x))
 
 LD_FLAGS :=-Wl,--print-memory-usage,--gc-sections -Wl,--wrap,main -Wl,--wrap,free -Wl,--wrap,_memalign_r -Wl,-n --specs=nano.specs -mcpu=cortex-m0plus -mthumb
 LD_SYS_LIBS :=-Wl,--start-group -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys  -Wl,--end-group
@@ -345,20 +172,10 @@ all: $(BPROJECT).bin $(BPROJECT).hex size
 	+@$(call MAKEDIR,$(OBJDIR))
 
 
-#BUILD/%.o : %.s
-#	+@$(call MAKEDIR,$(dir $@))
-#	+@echo "Assemble: $(notdir $<)"
-#	@$(AS) -c $(ASM_FLAGS) -o $@ $<
-
-%.s.o : %.s
+BUILD/%.o : %.s
 	+@$(call MAKEDIR,$(dir $@))
 	+@echo "Assemble: $(notdir $<)"
 	@$(AS) -c $(ASM_FLAGS) -o $@ $<
-
-#asmqsort.s.o:
-#	+@$(call MAKEDIR,$(dir $@))
-#	+@echo "Assemble: $(notdir $<)"
-#	@$(AS) -c $(ASM_FLAGS) -o asmqsort.s.o asmqsort.s
 
 BUILD/%.o : %.c
 	+@$(call MAKEDIR,$(dir $@))
@@ -373,8 +190,6 @@ BUILD/%.o : %.cpp
 
 $(BPROJECT).link_script.ld: $(LINKER_SCRIPT)
 	@$(PREPROC) $< -o $@
-
-
 
 $(BPROJECT).elf: $(OBJECTS) $(SYS_OBJECTS) $(BPROJECT).link_script.ld
 	+@echo "link: $(notdir $@)"

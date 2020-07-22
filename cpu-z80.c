@@ -214,7 +214,7 @@ int OP_0x0F(){   /* RRCA (Rotate reg A right, old bit 0 written to Carry flag) *
   return 4;  /* that many CPU cycles should be spent on this instruction */
 }
 int OP_0x10(){   /* STOP (opcode 10 00) */
-  QuitEmulator = 1;
+  //QuitEmulator = 1;
   return 4;  /* that many CPU cycles should be spent on this instruction */
 }
 int OP_0x11(){   /* LD DE,nn  (load nn into DE) */

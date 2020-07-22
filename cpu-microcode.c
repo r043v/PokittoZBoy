@@ -84,13 +84,13 @@ FORCE_INLINE int ReadRegHL(){ return (DwordVal(Register->L, Register->H)); }
 #define GetFlagC() Register->FC
 
 FORCE_INLINE void PushToStack(uint8_t TmpRegister1, uint8_t TmpRegister2) {    /* Push a register pair to the stack */
-  Register->SP -= 1;  /* decrement SP to update the Stack Point address */
-  Register->SPBlock = getMemoryBlock( Register->SP );
+  //Register->SP -= 1;  /* decrement SP to update the Stack Point address */
+  Register->SPBlock = getMemoryBlock( --Register->SP );
 
-  Register->SPBlock[ Register->SP ] = TmpRegister1;
+  Register->SPBlock[ Register->SP-- ] = TmpRegister1;
   // MemoryWrite(Register->SP, TmpRegister1);        /* Write the byte */
 
-  Register->SP -= 1;  /* decrement SP to update the Stack Point address */
+  //Register->SP -= 1;  /* decrement SP to update the Stack Point address */
   // Register->SPBlock = getMemoryBlock( Register->SP );
 
   // MemoryWrite(Register->SP, TmpRegister2);        /* Write the byte */
@@ -98,12 +98,12 @@ FORCE_INLINE void PushToStack(uint8_t TmpRegister1, uint8_t TmpRegister2) {    /
 }
 
 FORCE_INLINE void PopFromStack(uint8_t *popreg1, uint8_t *popreg2) {    /* Pop a register pair from the stack */
-  *popreg2 = Register->SPBlock[ Register->SP ]; // MemoryRead(Register->SP);
-  Register->SP++;
+  *popreg2 = Register->SPBlock[ Register->SP++ ]; // MemoryRead(Register->SP);
+  //Register->SP++;
   // Register->SPBlock = getMemoryBlock( Register->SP );
 
-  *popreg1 = Register->SPBlock[ Register->SP ]; // MemoryRead(Register->SP);
-  Register->SP++;
+  *popreg1 = Register->SPBlock[ Register->SP++ ]; // MemoryRead(Register->SP);
+  //Register->SP++;
   Register->SPBlock = getMemoryBlock( Register->SP );
   // *popreg1 =  MemoryRead(Register->SP);
 }
