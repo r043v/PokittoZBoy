@@ -56,7 +56,7 @@
 //
 //     <h> WD Oscillator Setting (WDTOSCCTRL)
 //       <o.0..4> DIVSEL: Select Divider for Fclkana
-//              <i> wd_osc_clk = Fclkana / (2 × (1 + DIVSEL))
+//              <i> wd_osc_clk = Fclkana / (2 ï¿½ (1 + DIVSEL))
 //            <0-31>
 //       <o.5..8> FREQSEL: Select WD Oscillator Analog Output Frequency (Fclkana)
 //            <1=> 0.5 MHz
@@ -91,7 +91,12 @@
 //            <2=> P = 4
 //            <3=> P = 8
 //     </h>
-#define SYSPLLCTRL_Val        0x00000023              // Reset value: 0x000
+#ifdef _OSCT
+#define SYSPLLCTRL_Val         (0x00000023+_OSCT)              // Reset value: 0x000
+#else
+#pragma message("no osct defined")
+#define SYSPLLCTRL_Val         0x00000023 //23 default
+#endif
 //
 //     <o.0..1> Main Clock Source Select (MAINCLKSEL)
 //        <0=> IRC Oscillator
@@ -137,7 +142,11 @@
 //            <2=> P = 4
 //            <3=> P = 8
 //     </h>
-#define USBPLLCTRL_Val        0x00000023              // Reset value: 0x000
+#ifdef _OSCT
+#define USBPLLCTRL_Val        (0x00000023+_OSCT)              // Reset value: 0x000
+#else
+#define USBPLLCTRL_Val        0x00000023
+#endif
 //
 //     <o.0..1> USB PLL Clock Source Select (USBPLLCLKSEL.SEL)
 //                     <i> USB PLL clock source must be switched to System Oscillator for correct USB operation

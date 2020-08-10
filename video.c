@@ -12,6 +12,17 @@ unsigned int VideoClkCounterMode, VideoClkCounterVBlank;
 uint8_t CurLY, LastLYdraw ;
 u_int8_t bgDrawLimitX ; // if bg is partially draw (covered by window)
 
+u_int8_t currentFrameskip = 3;
+
+void flipFrameSkip(void){
+  if( ++currentFrameskip == 6 ) currentFrameskip=0;
+/*
+  char msg[3];
+  sprintf((char*)&msg, "f%u", currentFrameskip);
+	SetUserMsg( msg );
+*/
+}
+
 #define lcdControlRegister (IoRegisters[0xFF40])
 
 #define pal_BGP 0xFF47
@@ -81,17 +92,14 @@ u_int8_t spriteColorTable[2][4] = { { 0,0,0,0 }, { 0,0,0,0 } }, spriteCurrentPal
 
 uint8_t tileTempBuffer[8];//[64];
 
-/*FORCE_INLINE*/ void DrawBackground( void ){
+void DrawBackground( void ){
   u_int32_t TilesDataAddr, BgTilesMapAddr, LastDisplayedTile = 0xffffffff;
   uint8_t y, z ;
-
-  //u_int8_t * bgColorTable = (u_int8_t*)&palColorTable[ IoRegisters[ pal_BGP ] ];
 
   TilesDataAddr = lcdControlRegister & 16 ? 0x8000 : 0x8800;
 
   y = CurLY + IoRegisters[ 0xFF42 ]; // scanline + scroll y
-//  z = ( y & 7 ) << 1 ; // tile offset ( 2B tile )
-  u_int8_t * tileBfPtrOffset = tileTempBuffer;// + ( z << 2 ) ; // out tile line offset ( 2B -> 8B tile )
+  u_int8_t * tileBfPtrOffset = tileTempBuffer; // out tile line offset ( 2B -> 8B tile )
 
   u_int8_t TileNum = IoRegisters[0xFF43] >> 3;  /* 0xFF43 is the SCX register */
 
@@ -102,7 +110,7 @@ uint8_t tileTempBuffer[8];//[64];
   u_int8_t *drawLimitX = framebuffer + bgDrawLimitX, *maxFullLine = drawLimitX - 8;
 
   u_int8_t *tilePtr = &VideoRAM[ BgTilesMapAddr + TileNum ], *lastTile = &tilePtr[ 32 - TileNum ];
-  u_int8_t *tileDataPtr = &VideoRAM[ TilesDataAddr + /*z*/ ( ( y & 7 ) << 1 ) ]; // add line offset
+  u_int8_t *tileDataPtr = &VideoRAM[ TilesDataAddr + ( ( y & 7 ) << 1 ) ]; // add line offset
 
   while( 1 ){
     u_int8_t TileToDisplay = TilesDataAddr == 0x8000 ? *tilePtr : UbyteToByte( *tilePtr ) + 128 ;
@@ -120,47 +128,47 @@ uint8_t tileTempBuffer[8];//[64];
         b1 = (*tileDataTempPtr++) << 1,
         b2 = *tileDataTempPtr ;
 
-      *tileBfPtr++ = bgColorTable[
+      tileBfPtr[0] = bgColorTable[
       ( ( b1 & bx100000000 )
       | ( b2 &  bx10000000 ) ) >> 7
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      tileBfPtr[1] = bgColorTable[
       ( ( b1 & bx10000000 )
       | ( b2 & bx01000000 ) ) >> 6
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      tileBfPtr[2] = bgColorTable[
       ( ( b1 & bx01000000 )
       | ( b2 & bx00100000 ) ) >> 5
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      tileBfPtr[3] = bgColorTable[
       ( ( b1 & bx00100000 )
       | ( b2 & bx00010000 ) ) >> 4
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      tileBfPtr[4] = bgColorTable[
       ( ( b1 & bx00010000 )
       | ( b2 & bx00001000 ) ) >> 3
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      tileBfPtr[5] = bgColorTable[
       ( ( b1 & bx00001000 )
       | ( b2 & bx00000100 ) ) >> 2
       ];
 
-      *tileBfPtr++ = bgColorTable[
+      tileBfPtr[6] = bgColorTable[
       ( ( b1 & bx00000100 )
       | ( b2 & bx00000010 ) ) >> 1
       ];
 
-      *tileBfPtr = bgColorTable[
+      tileBfPtr[7] = bgColorTable[
         ( b1 & bx00000010 )
       | ( b2 & bx00000001 )
       ];
 
-      tileBfPtr -= 7;
+      //tileBfPtr -= 7;
     }
 
     // crop right
@@ -169,33 +177,33 @@ uint8_t tileTempBuffer[8];//[64];
       return;
     }
 
-    u_int8_t * frameBfPtrEnd = &frameBfPtr[ 8 ];
-
     // crop left
     if( frameBfPtr < framebuffer ){
+      u_int8_t * frameBfPtrEnd = &frameBfPtr[ 8 ];
       register u_int8_t n = framebuffer - frameBfPtr;
       frameBfPtr += n; tileBfPtr += n;
+      while( frameBfPtr != frameBfPtrEnd ) *frameBfPtr++ = *tileBfPtr++;
+    } else {
+      *frameBfPtr++ = *tileBfPtr++;
+      *frameBfPtr++ = *tileBfPtr++;
+      *frameBfPtr++ = *tileBfPtr++;
+      *frameBfPtr++ = *tileBfPtr++;
+      *frameBfPtr++ = *tileBfPtr++;
+      *frameBfPtr++ = *tileBfPtr++;
+      *frameBfPtr++ = *tileBfPtr++;
+      *frameBfPtr++ = *tileBfPtr;
     }
 
-    while( frameBfPtr != frameBfPtrEnd ) *frameBfPtr++ = *tileBfPtr++;
+    //while( frameBfPtr != frameBfPtrEnd ) *frameBfPtr++ = *tileBfPtr++;
   }
 }
 
-/*FORCE_INLINE*/ void DrawWindow(void){
-/*  if(// CurLY > 143 // out of screen bottom
-   IoRegisters[0xFF4B] > 166 // out of screen right
-  || IoRegisters[0xFF4B] < 7 // out of screen left
-  //|| IoRegisters[0xFF4A] > CurLY // show after current scanline
-  ) return;
-*/
-//  u_int8_t * bgColorTable = (u_int8_t*)&palColorTable[ IoRegisters[ pal_BGP ] ];
-
+void DrawWindow(void){
   u_int32_t LastDisplayedTile = 0xffffffff;
   u_int32_t TilesDataAddr = lcdControlRegister & 16 ? 0x8000 : 0x8800 ;
 
   u_int8_t pixrow = CurLY - IoRegisters[ 0xFF4A ] ; // window line to draw
   u_int8_t TileNum = ( pixrow >> 3 ) << 5 ; /* tile data index */
-//  u_int8_t z = ( pixrow & bx00000111 ) << 1; // offset y in gb tile (2B)
 
   u_int32_t TilesMapAddr = ( lcdControlRegister & 64 ? 0x9C00 : 0x9800 ) ;
 
@@ -219,47 +227,47 @@ uint8_t tileTempBuffer[8];//[64];
       register u_int32_t b1 = ( *tileDataTempPtr++ ) << 1 ;
       register u_int32_t b2 = *tileDataTempPtr ;
 
-      *tileBfPtr++ = wdColorTable[
+      tileBfPtr[0] = wdColorTable[
       ( ( b1 & bx100000000 )
       | ( b2 &  bx10000000 ) ) >> 7
       ];
 
-      *tileBfPtr++ = wdColorTable[
+      tileBfPtr[1] = wdColorTable[
       ( ( b1 & bx10000000 )
       | ( b2 & bx01000000 ) ) >> 6
       ];
 
-      *tileBfPtr++ = wdColorTable[
+      tileBfPtr[2] = wdColorTable[
       ( ( b1 & bx01000000 )
       | ( b2 & bx00100000 ) ) >> 5
       ];
 
-      *tileBfPtr++ = wdColorTable[
+      tileBfPtr[3] = wdColorTable[
       ( ( b1 & bx00100000 )
       | ( b2 & bx00010000 ) ) >> 4
       ];
 
-      *tileBfPtr++ = wdColorTable[
+      tileBfPtr[4] = wdColorTable[
       ( ( b1 & bx00010000 )
       | ( b2 & bx00001000 ) ) >> 3
       ];
 
-      *tileBfPtr++ = wdColorTable[
+      tileBfPtr[5] = wdColorTable[
       ( ( b1 & bx00001000 )
       | ( b2 & bx00000100 ) ) >> 2
       ];
 
-      *tileBfPtr++ = wdColorTable[
+      tileBfPtr[6] = wdColorTable[
       ( ( b1 & bx00000100 )
       | ( b2 & bx00000010 ) ) >> 1
       ];
 
-      *tileBfPtr = wdColorTable[
+      tileBfPtr[7] = wdColorTable[
         ( b1 & bx00000010 )
       | ( b2 & bx00000001 )
       ];
 
-      tileBfPtr -= 7;
+      //tileBfPtr -= 7;
     }
 
     // crop right
@@ -268,8 +276,16 @@ uint8_t tileTempBuffer[8];//[64];
       return;
     }
 
-    register u_int8_t * frameBfPtrEnd = &frameBfPtr[ 8 ] ;
-    while( frameBfPtr != frameBfPtrEnd ) *frameBfPtr++ = *tileBfPtr++;
+//    register u_int8_t * frameBfPtrEnd = &frameBfPtr[ 8 ] ;
+//    while( frameBfPtr != frameBfPtrEnd ) *frameBfPtr++ = *tileBfPtr++;
+    *frameBfPtr++ = *tileBfPtr++;
+    *frameBfPtr++ = *tileBfPtr++;
+    *frameBfPtr++ = *tileBfPtr++;
+    *frameBfPtr++ = *tileBfPtr++;
+    *frameBfPtr++ = *tileBfPtr++;
+    *frameBfPtr++ = *tileBfPtr++;
+    *frameBfPtr++ = *tileBfPtr++;
+    *frameBfPtr++ = *tileBfPtr;
   }
 }
 
@@ -303,174 +319,243 @@ union sprite * sprites = &SpriteOAM[0xFE00];
 union sprite * spritesEnd = &SpriteOAM[0xFE00 + 40*4];//sprites + 40;
 
 void DrawSprites( void ){// int32_t CurScanline ) {
-  int PatternNum, SpriteFlags, UbyteBuff2, x, y, z, t, xx;
   int SpritePosX, SpritePosY;
-  u_int32_t SpriteMaxY;
-  u_int8_t NumberOfSpritesToDisplay = 0;
-  static uint8_t SpriteBuff[128];
-  static int ListOfSpritesToDisplay[40] = { 0 };
+  u_int8_t NumberOfSpritesToDisplay;
+  uint8_t buffer[ 8 ];
+  int ListOfSpritesToDisplay[ 10 ] = { 0 };
 
-    SpriteMaxY = IoRegisters[0xFF40] & bx00000100 ? 15 : 7;
+  u_int8_t SpriteMaxY = IoRegisters[0xFF40] & bx00000100 ? 15 : 7;
 
-    union sprite *sprite = sprites;
-    u_int32_t * display = (u_int32_t*)ListOfSpritesToDisplay;
-    u_int32_t scanline = CurLY + 16;
+  union sprite *sprite = sprites;
+  u_int32_t * display = (u_int32_t*)ListOfSpritesToDisplay, *maxDisplay = &display[ 10 ];
+  u_int32_t scanline = CurLY + 16;
 
-    while( sprite != spritesEnd ){
-      if( !sprite->x || sprite->x >= 168 // on screen x
-       || !sprite->y //|| sprite->y >= 160 // on screen y
-       || sprite->y > scanline // on scanline
-       || sprite->y + SpriteMaxY < scanline
-      ){ sprite++; continue; } // no!
+  while( sprite != spritesEnd ){
+    if( !sprite->x || sprite->x >= 168 // on screen x
+     || !sprite->y //|| sprite->y >= 160 // on screen y
+     || sprite->y > scanline // on scanline
+     || sprite->y + SpriteMaxY < scanline
+    ){ sprite++; continue; } // no!
 
-      // visible at this scanline
-      *display++ = ( sprite->x << 6 ) | ( sprite - sprites ) ;
-      sprite++;
-      if( ++NumberOfSpritesToDisplay == 10 ) break;
-    };
+    // visible at this scanline
+    *display++ = ( sprite->x << 6 ) | ( sprite - sprites ) ;
+    if( display == maxDisplay ) break;
+    sprite++;
+  };
+
+  NumberOfSpritesToDisplay = display - (u_int32_t*)ListOfSpritesToDisplay;
 
 //    NumberOfSpritesToDisplay = display - (u_int32_t*)ListOfSpritesToDisplay;
-    if( !NumberOfSpritesToDisplay ) return;
+  if( !NumberOfSpritesToDisplay ) return;
 
-    // Sort the list of sprites to display
-    if( NumberOfSpritesToDisplay > 1 )
-      cqsort( ListOfSpritesToDisplay, &ListOfSpritesToDisplay[NumberOfSpritesToDisplay - 1] );
+  // Sort the list of sprites to display
+  if( NumberOfSpritesToDisplay > 1 )
+    cqsort( ListOfSpritesToDisplay, &ListOfSpritesToDisplay[ NumberOfSpritesToDisplay - 1 ] );
 
-//    if( NumberOfSpritesToDisplay > 10 ) NumberOfSpritesToDisplay = 10;
+  u_int32_t * lastDisplay = display ;
+  display = (u_int32_t*)ListOfSpritesToDisplay;
+  do {
+    //sprite = &sprites[ ListOfSpritesToDisplay & bx00111111 ];
+    //u_int8_t * p = (u_int8_t*)&sprite;
+    u_int8_t * p = &_SpriteOAM[ ( (*display++) & bx00111111 ) << 2 ];
+    SpritePosY = *p++ - 16 ;
+    SpritePosX = *p++ - 8 ;
 
-    // And here we are going to display each sprite (in the right order, of course)
-    for (xx = 0; xx < NumberOfSpritesToDisplay; xx++) {
-          x = ListOfSpritesToDisplay[xx] & bx00111111;  /* Retrieve 6 least significant bits (these are the actual ID of the sprite) */
+    u_int8_t * flag = p + 1 ;
+    u_int8_t pal = (*flag) & bx00010000 ? 1 : 0 ;
 
-          u_int8_t * p = &SpriteOAM[ 0xFE00 + (x << 2) ];
+    // recompute palette color table if change
+    u_int8_t *spritePal = spriteColorTable[ pal ],
+    *spriteCurrentPalette = &spriteCurrentPal[ pal ],
+    *spritePalIndex = &IoRegisters[ pal + pal_OBP0 ] ;
 
-          SpritePosY = *p++ - 16;//SpriteOAM[0xFE00 + (x << 2)] - 16;     // sprite's ypos on screen
-          SpritePosX = *p++ - 8;//SpriteOAM[0xFE00 + (x << 2) + 1] - 8;  // sprite's xpos on screen
-          PatternNum = *p++;//SpriteOAM[0xFE00 + (x << 2) + 2];      // pattern num
-          if (SpriteMaxY == 15) PatternNum &= bx11111110;     // the LSB is ignored in 8x16 sprite mode
-
-          SpriteFlags = *p;//SpriteOAM[0xFE00 + (x << 2) + 3];  // Flags
-
-          u_int8_t SpritePalette = SpriteFlags & bx00010000 ? 1 : 0;
-
-          p = &VideoRAM[ 0x8000 + ( PatternNum << 4 ) ];
-          register u_int8_t * s = SpriteBuff;
-          u_int8_t * pend = &p[ (SpriteMaxY<<1) + 2 ];
-
-          if( SpriteFlags & bx00100000 ){ // xflip
-            while( p != pend ){
-              register u_int8_t b1 = *p++;
-              register u_int8_t b2 = *p++;
-              *s++ = (((b2 & bx00000001)) | (((b1 & bx00000001)) << 1));
-              *s++ = (((b2 & bx00000010) >> 1) | (((b1 & bx00000010) >> 1) << 1));
-              *s++ = (((b2 & bx00000100) >> 2) | (((b1 & bx00000100) >> 2) << 1));
-              *s++ = (((b2 & bx00001000) >> 3) | (((b1 & bx00001000) >> 3) << 1));
-              *s++ = (((b2 & bx00010000) >> 4) | (((b1 & bx00010000) >> 4) << 1));
-              *s++ = (((b2 & bx00100000) >> 5) | (((b1 & bx00100000) >> 5) << 1));
-              *s++ = (((b2 & bx01000000) >> 6) | (((b1 & bx01000000) >> 6) << 1));
-              *s++ = (((b2 & bx10000000) >> 7) | (((b1 & bx10000000) >> 7) << 1));
-            }
-          } else { // normal
-            while( p != pend ){
-              register u_int8_t b1 = *p++;
-              register u_int8_t b2 = *p++;
-
-              *s++ = (((b2 & bx10000000) >> 7) | (((b1 & bx10000000) >> 7) << 1));
-              *s++ = (((b2 & bx01000000) >> 6) | (((b1 & bx01000000) >> 6) << 1));
-              *s++ = (((b2 & bx00100000) >> 5) | (((b1 & bx00100000) >> 5) << 1));
-              *s++ = (((b2 & bx00010000) >> 4) | (((b1 & bx00010000) >> 4) << 1));
-              *s++ = (((b2 & bx00001000) >> 3) | (((b1 & bx00001000) >> 3) << 1));
-              *s++ = (((b2 & bx00000100) >> 2) | (((b1 & bx00000100) >> 2) << 1));
-              *s++ = (((b2 & bx00000010) >> 1) | (((b1 & bx00000010) >> 1) << 1));
-              *s++ = (((b2 & bx00000001)) | (((b1 & bx00000001)) << 1));
-            }
-          }
-
-          if( SpriteFlags & bx01000000 ) {
-	    // Bit 6 = Y flip (vertical mirror)
-            register u_int32_t tmp, *l1 = (u_int32_t*)SpriteBuff, *l2 = &l1[ SpriteMaxY<<1 ];
-            //u_int32_t lend = &l1[ SpriteMaxY + 1 ];
-            while( 1 ){// l1 != lend ){
-              // 4 lines for unroll a bit
-              // 0
-              tmp = *l1;
-              *l1++ = *l2;
-              *l2++ = tmp;
-              tmp = *l1;
-              *l1++ = *l2;
-              *l2 = tmp;
-              l2 -= 3;
-
-              // 1
-              tmp = *l1;
-              *l1++ = *l2;
-              *l2++ = tmp;
-
-              tmp = *l1;
-              *l1++ = *l2;
-              *l2 = tmp;
-              l2 -= 3;
-
-              // 2
-              tmp = *l1;
-              *l1++ = *l2;
-              *l2++ = tmp;
-
-              tmp = *l1;
-              *l1++ = *l2;
-              *l2 = tmp;
-              l2 -= 3;
-
-              // 3
-              tmp = *l1;
-              *l1++ = *l2;
-              *l2++ = tmp;
-
-              tmp = *l1;
-              *l1++ = *l2;
-              *l2-- = tmp;
-
-              if( l1 == l2 ) break;
-              l2 -= 2;
-            };
-
-          }
-
-          // Now apply the sprite onscreen...
-
-          u_int8_t *spritePal = spriteColorTable[ SpritePalette ],
-          *spriteCurrentPalette = &spriteCurrentPal[ SpritePalette ];
-          u_int8_t *spritePalIndex = &IoRegisters[ SpritePalette + pal_OBP0 ];// ? pal_OBP1 : pal_OBP0;
-          if( *spriteCurrentPalette != *spritePalIndex ){
-            u_int8_t colorMore[2] = { 4, 8 }, more = colorMore[SpritePalette];
-            *spriteCurrentPalette = *spritePalIndex;
-            spritePal[0] = ( (*spriteCurrentPalette) & 3 ) + more;
-            spritePal[1] = ( ((*spriteCurrentPalette) >> 4) & 3 ) + more;
-            spritePal[2] = ( ((*spriteCurrentPalette) >> 2) & 3 ) + more;
-            spritePal[3] = ( ((*spriteCurrentPalette) >> 6) & 3 ) + more;
-          }
-
-      	  z = (CurLY - SpritePosY); /* Apply to screen only one line of the sprite (no need to do more) */
-      	  for (t = 0; t < 8; t++){
-      	    /*  Update all pixels, but not 0 (which are transparent for a sprite) */
-      	    if (((SpritePosX + t) >= 0) && ((SpritePosY + z) >= 0) && ((SpritePosX + t) < 160) && ((SpritePosY + z) < 144)) { /* don't try to write outside the screen */
-      	      if( SpriteBuff[(z << 3) | t] ){  /* color 0 is transparent on sprites */
-            		/* If bit 7 of the sprite's flags is set, then the sprite is "hidden" (prevails only over color 0 of background) */
-            		if (((SpriteFlags & bx10000000) == 0) || getPixel(SpritePosX + t, 0) == *bgColorTable/*UbyteBuff1*/) { /* Sprite's priority over background */
-            		  /*ScreenBuffer(SpritePosX + t, SpritePosY + z) = GbPalette(SpriteBuff((z << 3) + t), SpritePalette) */
-/*            		  if (SpritePalette == 0) {
-            		    setPixel(SpritePosX + t, 0, GetGbPalette(pal_OBP0, SpriteBuff[(z << 3) | t])+4);
-            		  } else {
-            		    setPixel(SpritePosX + t, 0, GetGbPalette(pal_OBP1, SpriteBuff[(z << 3) | t])+8);
-            		  }
-*/
-                  setPixel( SpritePosX + t, 0, spritePal[ SpriteBuff[ (z << 3) | t ] ] );
-            		}
-      	      }
-      	    }
-      	  }
-          /*} */
+    if( *spriteCurrentPalette != *spritePalIndex ){
+      u_int8_t more = pal ? 8 : 4 ;
+      *spriteCurrentPalette = *spritePalIndex;
+      spritePal[0] = ( (*spriteCurrentPalette) & 3 ) + more;
+      spritePal[1] = ( ((*spriteCurrentPalette) >> 4) & 3 ) + more;
+      spritePal[2] = ( ((*spriteCurrentPalette) >> 2) & 3 ) + more;
+      spritePal[3] = ( ((*spriteCurrentPalette) >> 6) & 3 ) + more;
     }
+
+    if( SpriteMaxY == 7 ){
+      if( (*flag) & bx01000000 ){ // yflip
+        p = _VideoRAM + ( *p << 4 )
+          + ( ( 7 - ( CurLY - SpritePosY ) ) << 1 );
+      } else {
+        p = _VideoRAM + ( *p << 4 )
+          + ( ( CurLY - SpritePosY ) << 1 );
+      }
+    } else {
+      if( (*flag) & bx01000000 ){ // yflip
+        p = _VideoRAM + ( ( *p & bx11111110 ) << 4 )
+          + ( ( 15 - ( CurLY - SpritePosY ) ) << 1 );
+      } else {
+        p = _VideoRAM + ( ( *p & bx11111110 ) << 4 )
+          + ( ( CurLY - SpritePosY ) << 1 );
+      }
+    }
+
+    register u_int32_t b1 = ( *p++ ) << 1 ;
+    register u_int32_t b2 = *p ;
+
+    if( (*flag) & bx00100000 ){ // xflip
+      buffer[0] =
+        ( b1 & bx00000010 )
+      | ( b2 & bx00000001 )
+      ;
+
+      buffer[1] =
+      ( ( b1 & bx00000100 )
+      | ( b2 & bx00000010 ) ) >> 1
+      ;
+
+      buffer[2] =
+      ( ( b1 & bx00001000 )
+      | ( b2 & bx00000100 ) ) >> 2
+      ;
+
+      buffer[3] =
+      ( ( b1 & bx00010000 )
+      | ( b2 & bx00001000 ) ) >> 3
+      ;
+
+      buffer[4] =
+      ( ( b1 & bx00100000 )
+      | ( b2 & bx00010000 ) ) >> 4
+      ;
+
+      buffer[5] =
+      ( ( b1 & bx01000000 )
+      | ( b2 & bx00100000 ) ) >> 5
+      ;
+
+      buffer[6] =
+      ( ( b1 & bx10000000 )
+      | ( b2 & bx01000000 ) ) >> 6
+      ;
+
+      buffer[7] =
+      ( ( b1 & bx100000000 )
+      | ( b2 &  bx10000000 ) ) >> 7
+      ;
+    } else {
+      buffer[0] =
+      ( ( b1 & bx100000000 )
+      | ( b2 &  bx10000000 ) ) >> 7
+      ;
+
+      buffer[1] =
+      ( ( b1 & bx10000000 )
+      | ( b2 & bx01000000 ) ) >> 6
+      ;
+
+      buffer[2] =
+      ( ( b1 & bx01000000 )
+      | ( b2 & bx00100000 ) ) >> 5
+      ;
+
+      buffer[3] =
+      ( ( b1 & bx00100000 )
+      | ( b2 & bx00010000 ) ) >> 4
+      ;
+
+      buffer[4] =
+      ( ( b1 & bx00010000 )
+      | ( b2 & bx00001000 ) ) >> 3
+      ;
+
+      buffer[5] =
+      ( ( b1 & bx00001000 )
+      | ( b2 & bx00000100 ) ) >> 2
+      ;
+
+      buffer[6] =
+      ( ( b1 & bx00000100 )
+      | ( b2 & bx00000010 ) ) >> 1
+      ;
+
+      buffer[7] =
+        ( b1 & bx00000010 )
+      | ( b2 & bx00000001 )
+      ;
+    }
+
+    register u_int8_t *screen, *s ;
+    u_int8_t *end;
+
+    if( SpritePosX < 0 ){ //crop left
+      screen = framebuffer ;
+      s = buffer - SpritePosX;
+      u_int8_t sx = 8 + SpritePosX ;
+      end = &framebuffer[ sx ] ;
+    } else {
+      s = buffer;
+      screen = &framebuffer[ SpritePosX ] ;
+      if( screen > &framebuffer[ 151 ] ) // crop right
+        end = &framebuffer[160] ;
+      else // no crop
+        end = 0;//&screen[ 8 ] ;
+    }
+
+    if( end ){
+      if( (*flag) & bx10000000 ){ // sprite can be hidden
+        while( screen != end ){
+          if( *s && *screen != *bgColorTable )
+            *screen++ = spritePal[ *s++ ];
+          else {
+            screen++;
+            s++;
+          }
+        };
+      } else {
+        while( screen != end ){
+          if( *s )
+            *screen++ = spritePal[ *s++ ];
+          else {
+            screen++;
+            s++;
+          }
+        };
+      }
+    } else { // no crop
+      if( (*flag) & bx10000000 ){ // sprite can be hidden
+        uint8_t bg = *bgColorTable;
+        if( *s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s && *screen == bg ) *screen = spritePal[ *s ];
+      } else { // no hide
+        if( *s ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s ) *screen = spritePal[ *s ];
+        screen++; s++;
+        if( *s ) *screen = spritePal[ *s ];
+      }
+    }
+
+  } while( display != lastDisplay ) ;
 }
 
 #define bgDisabledColor 0
@@ -488,13 +573,12 @@ void DrawSprites( void ){// int32_t CurScanline ) {
 #define TurnLcdOff clearFramebuffer // fix me
 
 #define GetLcdMode() (IoRegisters[0xFF41] & bx00000011)
-//#define SetLcdMode(x) ( IoRegisters[0xFF41] &= (bx11111100 | x) )
+#define SetLcdMode(x) ( IoRegisters[0xFF41] = ( IoRegisters[0xFF41] & bx11111100 ) | x )
 
-FORCE_INLINE void SetLcdMode(uint8_t x) {
+/*FORCE_INLINE void SetLcdMode(uint8_t x) {
   IoRegisters[0xFF41] &= bx11111100;
   IoRegisters[0xFF41] |= x;
-}
-
+}*/
 
 #define DIV456( A ) ( (A) * (0x1000000 / 456) ) >> 24
 
@@ -715,7 +799,7 @@ uint32_t frameCount;
       SetLcdMode(1);   /* Here I set LCD mode 1 */
       INT(INT_VBLANK);   /* Ask for the VBLANK interrupt */
 
-    	if( !frameskip-- ) frameskip = 2;
+    	if( !frameskip-- ) frameskip = currentFrameskip;
 
       if( lcdControlRegister & 128 == 0 ) TurnLcdOff();
     }
@@ -750,14 +834,14 @@ uint32_t frameCount;
     if( bgCurrentPal != IoRegisters[pal_BGP] ){
       bgCurrentPal = IoRegisters[pal_BGP];
       register u_int8_t * bg = bgColorTable;
-      *bg = bgCurrentPal & 3;
-      wdColorTable[0] = (*bg++) + 12;
-      *bg = (bgCurrentPal >> 4) & 3;
-      wdColorTable[1] = (*bg++) + 12;
-      *bg = (bgCurrentPal >> 2) & 3;
-      wdColorTable[2] = (*bg++) + 12;
-      *bg = (bgCurrentPal >> 6) & 3;
-      wdColorTable[3] = ( *bg ) + 12;
+      bgColorTable[0] = bgCurrentPal & 3;
+      wdColorTable[0] = bgColorTable[0] + 12;
+      bgColorTable[1] = (bgCurrentPal >> 4) & 3;
+      wdColorTable[1] = bgColorTable[1] + 12;
+      bgColorTable[2] = (bgCurrentPal >> 2) & 3;
+      wdColorTable[2] = bgColorTable[2] + 12;
+      bgColorTable[3] = (bgCurrentPal >> 6) & 3;
+      wdColorTable[3] = bgColorTable[3] + 12;
     }
 
       if( scaling ){

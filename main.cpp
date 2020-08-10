@@ -80,11 +80,12 @@ extern "C" void SetUserMsg(char *msg) {
     Pokitto::setWindow( 16, 30, 144+15, 159+30 );
   }
   //#endif
-  wait_ms(1000);
+  wait_ms(250);
 }
 
 extern "C" void flipPalette( void );
 extern "C" void flipScaling( void );
+extern "C" void flipFrameSkip( void );
 extern "C" void checkMapper( void );
 
 uint32_t prevTime;
@@ -141,6 +142,10 @@ int drv_keypoll(void){
       } else if( Buttons::buttons_state & (1<<DOWNBIT) ){
         if( Buttons::buttons_state & (1<<CBIT) ){
           flipScaling(); btn = 0;
+        }
+      } else if( Buttons::buttons_state & (1<<RIGHTBIT) ){
+        if( Buttons::buttons_state & (1<<CBIT) ){
+          flipFrameSkip(); btn = 0;
         }
       }
 
