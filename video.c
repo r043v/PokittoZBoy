@@ -12,7 +12,7 @@ unsigned int VideoClkCounterMode, VideoClkCounterVBlank;
 uint8_t CurLY, LastLYdraw ;
 u_int8_t bgDrawLimitX ; // if bg is partially draw (covered by window)
 
-u_int8_t currentFrameskip = 3;
+u_int8_t currentFrameskip = 2;
 
 void flipFrameSkip(void){
   if( ++currentFrameskip == 6 ) currentFrameskip=0;
@@ -84,9 +84,6 @@ void flipPalette( void ){
   palette = &palettes[ 16*currentPalette ];
 }
 
-#define setPixel(x,y,c) framebuffer[x]=(c)
-#define getPixel(x,y) framebuffer[x]
-
 u_int8_t bgColorTable[4] = { 0,0,0,0 }, wdColorTable[4] = { 0,0,0,0 }, bgCurrentPal = 0;
 u_int8_t spriteColorTable[2][4] = { { 0,0,0,0 }, { 0,0,0,0 } }, spriteCurrentPal[2] = { 0, 0 };
 
@@ -99,7 +96,7 @@ void DrawBackground( void ){
   TilesDataAddr = lcdControlRegister & 16 ? 0x8000 : 0x8800;
 
   y = CurLY + IoRegisters[ 0xFF42 ]; // scanline + scroll y
-  u_int8_t * tileBfPtrOffset = tileTempBuffer; // out tile line offset ( 2B -> 8B tile )
+  //u_int8_t * tileBfPtrOffset = tileTempBuffer; // out tile line offset ( 2B -> 8B tile )
 
   u_int8_t TileNum = IoRegisters[0xFF43] >> 3;  /* 0xFF43 is the SCX register */
 
@@ -117,7 +114,7 @@ void DrawBackground( void ){
 
     if( ++tilePtr == lastTile ) tilePtr -= 32;
 
-    register u_int8_t * tileBfPtr = tileBfPtrOffset ;
+    //register u_int8_t * tileBfPtr = tileBfPtrOffset ;
 
     if( TileToDisplay != LastDisplayedTile ){
       LastDisplayedTile = TileToDisplay;
@@ -128,42 +125,42 @@ void DrawBackground( void ){
         b1 = (*tileDataTempPtr++) << 1,
         b2 = *tileDataTempPtr ;
 
-      tileBfPtr[0] = bgColorTable[
+      tileTempBuffer[0] = bgColorTable[
       ( ( b1 & bx100000000 )
       | ( b2 &  bx10000000 ) ) >> 7
       ];
 
-      tileBfPtr[1] = bgColorTable[
+      tileTempBuffer[1] = bgColorTable[
       ( ( b1 & bx10000000 )
       | ( b2 & bx01000000 ) ) >> 6
       ];
 
-      tileBfPtr[2] = bgColorTable[
+      tileTempBuffer[2] = bgColorTable[
       ( ( b1 & bx01000000 )
       | ( b2 & bx00100000 ) ) >> 5
       ];
 
-      tileBfPtr[3] = bgColorTable[
+      tileTempBuffer[3] = bgColorTable[
       ( ( b1 & bx00100000 )
       | ( b2 & bx00010000 ) ) >> 4
       ];
 
-      tileBfPtr[4] = bgColorTable[
+      tileTempBuffer[4] = bgColorTable[
       ( ( b1 & bx00010000 )
       | ( b2 & bx00001000 ) ) >> 3
       ];
 
-      tileBfPtr[5] = bgColorTable[
+      tileTempBuffer[5] = bgColorTable[
       ( ( b1 & bx00001000 )
       | ( b2 & bx00000100 ) ) >> 2
       ];
 
-      tileBfPtr[6] = bgColorTable[
+      tileTempBuffer[6] = bgColorTable[
       ( ( b1 & bx00000100 )
       | ( b2 & bx00000010 ) ) >> 1
       ];
 
-      tileBfPtr[7] = bgColorTable[
+      tileTempBuffer[7] = bgColorTable[
         ( b1 & bx00000010 )
       | ( b2 & bx00000001 )
       ];
@@ -173,25 +170,27 @@ void DrawBackground( void ){
 
     // crop right
     if( frameBfPtr > maxFullLine ){
-      while( frameBfPtr != drawLimitX ) *frameBfPtr++ = *tileBfPtr++;
+      u_int8_t * p = tileTempBuffer;
+      while( frameBfPtr != drawLimitX ) *frameBfPtr++ = *p++;
       return;
     }
 
     // crop left
     if( frameBfPtr < framebuffer ){
       u_int8_t * frameBfPtrEnd = &frameBfPtr[ 8 ];
-      register u_int8_t n = framebuffer - frameBfPtr;
-      frameBfPtr += n; tileBfPtr += n;
-      while( frameBfPtr != frameBfPtrEnd ) *frameBfPtr++ = *tileBfPtr++;
+      u_int8_t n = framebuffer - frameBfPtr;
+      frameBfPtr += n;
+      u_int8_t * p = tileTempBuffer + n;
+      while( frameBfPtr != frameBfPtrEnd ) *frameBfPtr++ = *p++;
     } else {
-      *frameBfPtr++ = *tileBfPtr++;
-      *frameBfPtr++ = *tileBfPtr++;
-      *frameBfPtr++ = *tileBfPtr++;
-      *frameBfPtr++ = *tileBfPtr++;
-      *frameBfPtr++ = *tileBfPtr++;
-      *frameBfPtr++ = *tileBfPtr++;
-      *frameBfPtr++ = *tileBfPtr++;
-      *frameBfPtr++ = *tileBfPtr;
+      *frameBfPtr++ = tileTempBuffer[0];
+      *frameBfPtr++ = tileTempBuffer[1];
+      *frameBfPtr++ = tileTempBuffer[2];
+      *frameBfPtr++ = tileTempBuffer[3];
+      *frameBfPtr++ = tileTempBuffer[4];
+      *frameBfPtr++ = tileTempBuffer[5];
+      *frameBfPtr++ = tileTempBuffer[6];
+      *frameBfPtr++ = tileTempBuffer[7];
     }
 
     //while( frameBfPtr != frameBfPtrEnd ) *frameBfPtr++ = *tileBfPtr++;
@@ -207,7 +206,7 @@ void DrawWindow(void){
 
   u_int32_t TilesMapAddr = ( lcdControlRegister & 64 ? 0x9C00 : 0x9800 ) ;
 
-  u_int8_t * tileBfPtrOffset = tileTempBuffer;// + ( z << 2 ) ; // out tile line offset ( 2B -> 8B tile )
+  //u_int8_t * tileBfPtrOffset = tileTempBuffer;// + ( z << 2 ) ; // out tile line offset ( 2B -> 8B tile )
 
   register u_int8_t * frameBfPtr = &framebuffer[ IoRegisters[ 0xFF4B ] - 7 ];
   u_int8_t *tilePtr = &VideoRAM[ TilesMapAddr + TileNum ] ;
@@ -217,7 +216,7 @@ void DrawWindow(void){
     u_int8_t TileToDisplay = TilesDataAddr == 0x8000 ? *tilePtr : UbyteToByte( *tilePtr ) + 128 ;
     tilePtr += 1;
 
-    register u_int8_t * tileBfPtr = tileBfPtrOffset ;
+    //register u_int8_t * tileBfPtr = tileBfPtrOffset ;
 
     if( TileToDisplay != LastDisplayedTile ){
       LastDisplayedTile = TileToDisplay;
@@ -227,42 +226,42 @@ void DrawWindow(void){
       register u_int32_t b1 = ( *tileDataTempPtr++ ) << 1 ;
       register u_int32_t b2 = *tileDataTempPtr ;
 
-      tileBfPtr[0] = wdColorTable[
+      tileTempBuffer[0] = wdColorTable[
       ( ( b1 & bx100000000 )
       | ( b2 &  bx10000000 ) ) >> 7
       ];
 
-      tileBfPtr[1] = wdColorTable[
+      tileTempBuffer[1] = wdColorTable[
       ( ( b1 & bx10000000 )
       | ( b2 & bx01000000 ) ) >> 6
       ];
 
-      tileBfPtr[2] = wdColorTable[
+      tileTempBuffer[2] = wdColorTable[
       ( ( b1 & bx01000000 )
       | ( b2 & bx00100000 ) ) >> 5
       ];
 
-      tileBfPtr[3] = wdColorTable[
+      tileTempBuffer[3] = wdColorTable[
       ( ( b1 & bx00100000 )
       | ( b2 & bx00010000 ) ) >> 4
       ];
 
-      tileBfPtr[4] = wdColorTable[
+      tileTempBuffer[4] = wdColorTable[
       ( ( b1 & bx00010000 )
       | ( b2 & bx00001000 ) ) >> 3
       ];
 
-      tileBfPtr[5] = wdColorTable[
+      tileTempBuffer[5] = wdColorTable[
       ( ( b1 & bx00001000 )
       | ( b2 & bx00000100 ) ) >> 2
       ];
 
-      tileBfPtr[6] = wdColorTable[
+      tileTempBuffer[6] = wdColorTable[
       ( ( b1 & bx00000100 )
       | ( b2 & bx00000010 ) ) >> 1
       ];
 
-      tileBfPtr[7] = wdColorTable[
+      tileTempBuffer[7] = wdColorTable[
         ( b1 & bx00000010 )
       | ( b2 & bx00000001 )
       ];
@@ -272,20 +271,21 @@ void DrawWindow(void){
 
     // crop right
     if( frameBfPtr > &framebuffer[ 151 ] ){
-      while( frameBfPtr != &framebuffer[160] ) *frameBfPtr++ = *tileBfPtr++;
+      u_int8_t * p = tileTempBuffer;
+      while( frameBfPtr != &framebuffer[160] ) *frameBfPtr++ = *p++;
       return;
     }
 
 //    register u_int8_t * frameBfPtrEnd = &frameBfPtr[ 8 ] ;
 //    while( frameBfPtr != frameBfPtrEnd ) *frameBfPtr++ = *tileBfPtr++;
-    *frameBfPtr++ = *tileBfPtr++;
-    *frameBfPtr++ = *tileBfPtr++;
-    *frameBfPtr++ = *tileBfPtr++;
-    *frameBfPtr++ = *tileBfPtr++;
-    *frameBfPtr++ = *tileBfPtr++;
-    *frameBfPtr++ = *tileBfPtr++;
-    *frameBfPtr++ = *tileBfPtr++;
-    *frameBfPtr++ = *tileBfPtr;
+    *frameBfPtr++ = tileTempBuffer[0];
+    *frameBfPtr++ = tileTempBuffer[1];
+    *frameBfPtr++ = tileTempBuffer[2];
+    *frameBfPtr++ = tileTempBuffer[3];
+    *frameBfPtr++ = tileTempBuffer[4];
+    *frameBfPtr++ = tileTempBuffer[5];
+    *frameBfPtr++ = tileTempBuffer[6];
+    *frameBfPtr++ = tileTempBuffer[7];
   }
 }
 
@@ -501,7 +501,7 @@ void DrawSprites( void ){// int32_t CurScanline ) {
     if( end ){
       if( (*flag) & bx10000000 ){ // sprite can be hidden
         while( screen != end ){
-          if( *s && *screen != *bgColorTable )
+          if( *s && *screen != bgColorTable[0] )
             *screen++ = spritePal[ *s++ ];
           else {
             screen++;
@@ -520,38 +520,38 @@ void DrawSprites( void ){// int32_t CurScanline ) {
       }
     } else { // no crop
       if( (*flag) & bx10000000 ){ // sprite can be hidden
-        uint8_t bg = *bgColorTable;
+        uint8_t bg = bgColorTable[0];
         if( *s && *screen == bg ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s && *screen == bg ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s && *screen == bg ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s && *screen == bg ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s && *screen == bg ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s && *screen == bg ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s && *screen == bg ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s && *screen == bg ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s && *screen == bg ) *screen = spritePal[ *s ];
       } else { // no hide
         if( *s ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s ) *screen = spritePal[ *s ];
-        screen++; s++;
-        if( *s ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s ) *screen = spritePal[ *s ];
+        screen++;
+        if( *++s ) *screen = spritePal[ *s ];
       }
     }
 
@@ -833,7 +833,6 @@ uint32_t frameCount;
     // recompute bg pal if need
     if( bgCurrentPal != IoRegisters[pal_BGP] ){
       bgCurrentPal = IoRegisters[pal_BGP];
-      register u_int8_t * bg = bgColorTable;
       bgColorTable[0] = bgCurrentPal & 3;
       wdColorTable[0] = bgColorTable[0] + 12;
       bgColorTable[1] = (bgCurrentPal >> 4) & 3;
